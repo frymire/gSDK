@@ -223,7 +223,7 @@ void gGimbal_displays(Gimbal_Interface &api)
     mavlink_raw_imu_t imu = api.get_gimbal_raw_imu();
     imu.time_usec = api.get_gimbal_time_stamps().raw_imu;
 
-	printf("Got message RAW IMU.  time: %lu, xacc:%d, yacc:%d, zacc:%d, xmag: %d, ymag: %d, zmag: %d, xgyro:%d, xgyro:%d, xgyro:%d(raw)\n",
+	printf("Raw IMU: time: %lu, acc-xyz: [%d, %d, %d], mag-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ",
     (unsigned long)imu.time_usec, 
     imu.xacc, 
     imu.yacc, 
@@ -238,11 +238,11 @@ void gGimbal_displays(Gimbal_Interface &api)
 	mavlink_mount_orientation_t mnt_orien = api.get_gimbal_mount_orientation();
   mnt_orien.time_boot_ms = api.get_gimbal_time_stamps().mount_orientation;
 
-	printf("Got message Mount orientation.  time: %lu, p:%f, r:%f, y:%f (degree)\n",
+	printf("Mount Orientation: time: %lu, YPR (deg): [%f, %f, %f]; ",
     (unsigned long) mnt_orien.time_boot_ms,
+    mnt_orien.yaw,
     mnt_orien.pitch,
-    mnt_orien.roll,
-    mnt_orien.yaw);
+    mnt_orien.roll);
 
     mavlink_mount_status_t mnt_status = api.get_gimbal_mount_status();
     uint64_t mnt_status_time_stamp = api.get_gimbal_time_stamps().mount_status;
@@ -259,11 +259,11 @@ void gGimbal_displays(Gimbal_Interface &api)
     else
     {
         printf(
-          "\tEncoder Angle: time: %lu, p:%d, r:%d, y:%d (degrees)\n", 
-          (unsigned long)mnt_status_time_stamp,
+          "\tEncoder Angle: time: %lu, YPR (deg): [%d, %d, %d]; ", 
+          (unsigned long) mnt_status_time_stamp,
+          mnt_status.pointing_c,
           mnt_status.pointing_a,
-          mnt_status.pointing_b,
-          mnt_status.pointing_c);
+          mnt_status.pointing_b);
     }
 
 
@@ -360,12 +360,19 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
         break;
         case STATE_SETTING_MESSAGE_RATE:
         {
-            uint8_t emit_heatbeat = 1;
-            uint8_t status_rate = 10;
-            uint8_t enc_value_rate = 10; 
-            uint8_t enc_type_send = 0;  // Set type of encoder is angle
-            uint8_t orien_rate = 50;
-            uint8_t imu_rate = 10;
+          uint8_t emit_heatbeat = 1;
+          uint8_t status_rate = 1;
+          uint8_t enc_value_rate = 1;
+          uint8_t enc_type_send = 0;  // Set type of encoder is angle
+          uint8_t orien_rate = 10;
+          uint8_t imu_rate = 10;
+          
+          //uint8_t emit_heatbeat = 1;
+          //  uint8_t status_rate = 10;
+          //  uint8_t enc_value_rate = 10; 
+          //  uint8_t enc_type_send = 0;  // Set type of encoder is angle
+          //  uint8_t orien_rate = 50;
+          //  uint8_t imu_rate = 10;
             
             printf("Set msg rate!\n");
 
@@ -410,18 +417,15 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
             if(onboard.get_gimbal_status().mode == GIMBAL_STATE_OFF)
             {
                 // Turn on gimbal
-                onboard.set_gimbal_motor_mode(TURN_ON);
-                
-                printf("TURN_ON!\n");
-                
+                onboard.set_gimbal_motor_mode(TURN_ON);                
+                printf("TURN_ON!\n");                
                  sdk.last_time_send = get_time_usec();
             }
             else if(onboard.get_gimbal_status().mode)
             {
                 if((get_time_usec() - sdk.last_time_send) > 1000000)
                 {
-                    sdk.last_time_send = get_time_usec();
-                    
+                    sdk.last_time_send = get_time_usec();                    
                     sdk.state = STATE_SET_CTRL_GIMBAL_YAW_FOLLOW_MODE;
                 }
             }

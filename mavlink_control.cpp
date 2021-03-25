@@ -224,23 +224,29 @@ void gGimbal_displays(Gimbal_Interface &api)
     imu.time_usec = api.get_gimbal_time_stamps().raw_imu;
 
 	printf("Got message RAW IMU.\n");
-	printf("\traw imu: time: %lu, xacc:%d, yacc:%d, zacc:%d, xgyro:%d, xgyro:%d, xgyro:%d(raw)\n", 
-                                                    (unsigned long)imu.time_usec, 
-                                                    imu.xacc, 
-                                                    imu.yacc, 
-                                                    imu.zacc,
-                                                    imu.xgyro,
-                                                    imu.ygyro,
-                                                    imu.zgyro);
+	printf(
+    "\traw imu: time: %lu, xacc:%d, yacc:%d, zacc:%d, xmag: %d, ymag: %d, zmag: %d, xgyro:%d, xgyro:%d, xgyro:%d(raw)\n",
+    (unsigned long)imu.time_usec, 
+    imu.xacc, 
+    imu.yacc, 
+    imu.zacc,
+    imu.xmag,
+    imu.ymag,
+    imu.zmag,
+    imu.xgyro,
+    imu.ygyro,
+    imu.zgyro);
 
 	mavlink_mount_orientation_t mnt_orien = api.get_gimbal_mount_orientation();
-    mnt_orien.time_boot_ms = api.get_gimbal_time_stamps().mount_orientation;
+  mnt_orien.time_boot_ms = api.get_gimbal_time_stamps().mount_orientation;
 
 	printf("Got message Mount orientation.\n");
-	printf("\torientation: time: %lu, p:%f, r:%f, y:%f (degree)\n",   (unsigned long)mnt_orien.time_boot_ms, 
-                                                                        mnt_orien.pitch, 
-                                                                        mnt_orien.roll, 
-                                                                        mnt_orien.yaw);
+	printf(
+    "\torientation: time: %lu, p:%f, r:%f, y:%f (degree)\n",
+    (unsigned long) mnt_orien.time_boot_ms,
+    mnt_orien.pitch,
+    mnt_orien.roll,
+    mnt_orien.yaw);
 
     mavlink_mount_status_t mnt_status = api.get_gimbal_mount_status();
     uint64_t mnt_status_time_stamp = api.get_gimbal_time_stamps().mount_status;
@@ -283,8 +289,6 @@ void gGimbal_displays(Gimbal_Interface &api)
     printf("\tROLL  stiff %d, hold: %d\n" , roll.stiffness, roll.holdstrength);
     printf("\tPAN   stiff %d, hold: %d\n" , pan.stiffness, pan.holdstrength);
 
-
-
 	printf("\n");
 }
 
@@ -308,8 +312,8 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
         {
 
            fw_version_t fw = onboard.get_gimbal_version();
+           usleep(100000);
            printf("FW Version: %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
-
 
            // This firmware only apply for the firmware version from v7.x.x or above
            if(fw.x >= 7 && fw.y >= 5)
@@ -322,6 +326,10 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
                 printf("1. MOTOR CONTROL\n");
                 printf("2. AXIS CONFIGURATION\n");
                 printf("3. MAVLINK MSG RATE CONFIGURATION\n");
+
+                // MEF: Try it anyway!
+                sdk.state = STATE_SETTING_GIMBAL;
+
            }
 
            usleep(100000);

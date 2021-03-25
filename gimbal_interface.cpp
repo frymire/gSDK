@@ -477,7 +477,7 @@ param_update()
 
 				mav_array_memcpy(request.param_id, get_param_name((param_index_t)i), sizeof(char)*16);
 
-				printf("Request param read: %s \n", get_param_name((param_index_t)i));
+				//printf("Request param read: %s \n", get_param_name((param_index_t)i));
 
 				// --------------------------------------------------------------------------
 				//   ENCODE
@@ -557,7 +557,7 @@ param_update()
 		if(!_params_list[i].seen && _params_list[i].fetch_attempts > _max_fetch_attempts)
 		{
 			 _params_list[i].state = PARAM_STATE_NONEXISTANT;
-        	printf("Gimbal parameter %s timed out\n", get_param_name((param_index_t)i));
+       //printf("Gimbal parameter %s timed out\n", get_param_name((param_index_t)i));
 		}
 	}
 }

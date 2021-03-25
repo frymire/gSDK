@@ -201,36 +201,36 @@ void gGimbal_displays(Gimbal_Interface &api)
 	printf("\n");
 
     gimbal_status_t gimbal_status = api.get_gimbal_status();
-    printf("Got message gimbal status \n");
+    printf("Got message gimbal status: ");
 
     if(gimbal_status.state == GIMBAL_STATE_OFF)
     {
-        printf("Gimbal's status is OFF!\n");
+        printf("OFF\n");
     }
     else if(gimbal_status.state == GIMBAL_STATE_ON)
     {
-          printf("Gimbal is operating\n");
+          printf("OPERATING\n");
     }
     else if(gimbal_status.state == GIMBAL_STATE_INIT)
     {
-        printf("Gimbal is busy!\n");
+        printf("BUSY\n");
     }
     else if(gimbal_status.state == GIMBAL_STATE_ERROR)
     {
-        printf("Gimbal's status is error!\n");
+        printf("ERROR\n");
     }
 
     mavlink_raw_imu_t imu = api.get_gimbal_raw_imu();
     imu.time_usec = api.get_gimbal_time_stamps().raw_imu;
 
-	printf("Raw IMU: time: %lu, acc-xyz: [%d, %d, %d], mag-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ",
-    (unsigned long)imu.time_usec, 
+	printf("Raw IMU: time: %lu, acc-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ", // mag-xyz: [%d, %d, %d]
+    (unsigned long) imu.time_usec / 100000, 
     imu.xacc, 
     imu.yacc, 
     imu.zacc,
-    imu.xmag,
-    imu.ymag,
-    imu.zmag,
+    //imu.xmag,
+    //imu.ymag,
+    //imu.zmag,
     imu.xgyro,
     imu.ygyro,
     imu.zgyro);
@@ -238,8 +238,8 @@ void gGimbal_displays(Gimbal_Interface &api)
 	mavlink_mount_orientation_t mnt_orien = api.get_gimbal_mount_orientation();
   mnt_orien.time_boot_ms = api.get_gimbal_time_stamps().mount_orientation;
 
-	printf("Mount Orientation: time: %lu, YPR (deg): [%f, %f, %f]; ",
-    (unsigned long) mnt_orien.time_boot_ms,
+	printf("Mount YPR (deg): [%f, %f, %f]; ", // time: %lu, 
+    //(unsigned long) mnt_orien.time_boot_ms,
     mnt_orien.yaw,
     mnt_orien.pitch,
     mnt_orien.roll);
@@ -247,7 +247,7 @@ void gGimbal_displays(Gimbal_Interface &api)
     mavlink_mount_status_t mnt_status = api.get_gimbal_mount_status();
     uint64_t mnt_status_time_stamp = api.get_gimbal_time_stamps().mount_status;
 
-	printf("Got message Mount status.");
+	//printf("Got message Mount status.");
 
     if(api.get_gimbal_config_mavlink_msg().enc_type_send)
     {
@@ -259,8 +259,8 @@ void gGimbal_displays(Gimbal_Interface &api)
     else
     {
         printf(
-          "\tEncoder Angle: time: %lu, YPR (deg): [%d, %d, %d]; ", 
-          (unsigned long) mnt_status_time_stamp,
+          "\tEncoder Angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
+          //(unsigned long) mnt_status_time_stamp,
           mnt_status.pointing_c,
           mnt_status.pointing_a,
           mnt_status.pointing_b);
@@ -334,6 +334,8 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
         case STATE_SETTING_GIMBAL:
         {
 
+          printf("Setting gimbal...\n");
+
             // Setting axis for control. see the struct gimbal_config_axis_t
             gimbal_config_axis_t config = {0};
 
@@ -353,13 +355,16 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
             gimbal_motor_control_t pan = {100, 40};
             onboard.set_gimbal_motor_control(tilt, roll, pan, 2, 3, 120);
 
-            usleep(100000);
+           usleep(100000);
 
            sdk.state = STATE_SETTING_MESSAGE_RATE;
         }
         break;
         case STATE_SETTING_MESSAGE_RATE:
         {
+
+          printf("Setting message rate...\n");
+
           uint8_t emit_heatbeat = 1;
           uint8_t status_rate = 1;
           uint8_t enc_value_rate = 1;
@@ -374,8 +379,6 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
           //  uint8_t orien_rate = 50;
           //  uint8_t imu_rate = 10;
             
-            printf("Set msg rate!\n");
-
             // configuration message. Note emit_heartbeat need to emit when using this gSDK. If not, the gSDK will waiting forever.
             onboard.set_gimbal_config_mavlink_msg(  emit_heatbeat, 
                                                     status_rate, 
@@ -390,6 +393,9 @@ void gGimbal_control_sample(Gimbal_Interface &onboard)
         break;
         case STATE_SET_GIMBAL_OFF:
         {
+
+          printf("Turning off gimbal...\n");
+
            // Check gimbal is on
             if(onboard.get_gimbal_status().state == GIMBAL_STATE_ON)
             {

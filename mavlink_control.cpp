@@ -94,9 +94,10 @@ int gGimbal_sample(int argc, char** argv) {
 			gGimbal_control_sample(gimbal_interface); // sample control
 			//gGimbal_displays(gimbal_interface); // sample display value
 		} else {
-      if(get_time_usec() - sdk.timeout > 10000000000) { 
+      if(get_time_usec() - sdk.timeout > 100000000000) { 
         printf("Timed out.\n");
-        sdk.state = STATE_IDLE;
+        //sdk.state = STATE_IDLE;
+        sdk.state = STATE_SETTING_MESSAGE_RATE;
       }
     }
 	}

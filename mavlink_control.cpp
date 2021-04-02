@@ -375,9 +375,9 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
     case STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CW:
     {
       printf("Control gimbal's yaw cw follow mode. %d\n", onboard.get_command_ack_do_mount_control());
-      float setpoint_pitch = 40.0;
+      float setpoint_pitch = 25.0;
       float setpoint_roll = 0;
-      float setpoint_yaw = 170.0;
+      float setpoint_yaw = 80.0;
       onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
 
       // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONTROL

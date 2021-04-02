@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
 int gGimbal_sample(int argc, char** argv) {
 
 	char* uart_name = (char*) "/dev/ttyUSB0"; // Unix default
+  int baudrate = 115200;
 	parse_commandline(argc, argv, uart_name, baudrate);
 	Serial_Port serial_port(uart_name, baudrate);
 	Gimbal_Interface gimbal_interface(&serial_port);
@@ -102,7 +103,7 @@ int gGimbal_sample(int argc, char** argv) {
 	return 0;
 }
 
-void parse_commandline(int argc, char** argv, char*& uart_name, int& baudrate) {
+void parse_commandline(int argc, char** argv, char* &uart_name, int &baudrate) {
 
   const char* commandline_usage = "usage: mavlink_control -d <devicename> -b <baudrate>";
 

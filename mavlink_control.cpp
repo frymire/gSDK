@@ -92,9 +92,12 @@ int gGimbal_sample(int argc, char** argv) {
 		if((time_ms % 500 == 0) && gimbal_interface.present()) {
       sdk.timeout = get_time_usec(); // reset time 
 			gGimbal_control_sample(gimbal_interface); // sample control
-			gGimbal_displays(gimbal_interface); // sample display value
+			//gGimbal_displays(gimbal_interface); // sample display value
 		} else {
-      if(get_time_usec() - sdk.timeout > 2000000) { sdk.state = STATE_IDLE; }
+      if(get_time_usec() - sdk.timeout > 5000000) { 
+        printf("Timed out after 5 seconds.\n");
+        sdk.state = STATE_IDLE;
+      }
     }
 	}
 

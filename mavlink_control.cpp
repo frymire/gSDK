@@ -232,20 +232,22 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
   switch(sdk.state) {
 
     case STATE_IDLE:
-
+    {
       sdk.state = STATE_CHECK_FIRMWARE_VERSION;
       sdk.last_time_send = get_time_usec();
+    }
       break;
 
     case STATE_CHECK_FIRMWARE_VERSION:
-
+    {
       fw_version_t fw = onboard.get_gimbal_version();
       printf("Firmware Version: %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
 
       // This firmware only apply for the firmware version from v7.x.x or above
-      if(fw.x >= 7 && fw.y >= 5) {
+      if (fw.x >= 7 && fw.y >= 5) {
         sdk.state = STATE_SETTING_GIMBAL;
-      } else {
+      }
+      else {
         //printf("DO NOT SUPPORT FUNCTIONS. Please check the firmware version\n");
         //printf("1. MOTOR CONTROL\n");
         //printf("2. AXIS CONFIGURATION\n");
@@ -254,35 +256,37 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
       }
 
       usleep(100000);
+    }
       break;
 
     case STATE_SETTING_GIMBAL:
-
+    {
       printf("Setting gimbal...\n");
 
       // Setting axis for control. see the struct gimbal_config_axis_t
-      gimbal_config_axis_t config = {0};
+      gimbal_config_axis_t config = { 0 };
 
-      config = {DIR_CCW, 50, 50, 65, 50, 0};
+      config = { DIR_CCW, 50, 50, 65, 50, 0 };
       onboard.set_gimbal_config_tilt_axis(config);
 
-      config = {DIR_CW, 50, 60, 0, 0, 0};
+      config = { DIR_CW, 50, 60, 0, 0, 0 };
       onboard.set_gimbal_config_roll_axis(config);
 
-      config = {DIR_CW, 50, 70, 87, 50, 0};
+      config = { DIR_CW, 50, 70, 87, 50, 0 };
       onboard.set_gimbal_config_pan_axis(config);
 
-      gimbal_motor_control_t tilt = {80, 40}; // stiffness, hold strength
-      gimbal_motor_control_t roll = {90, 40};
-      gimbal_motor_control_t pan = {100, 40};
+      gimbal_motor_control_t tilt = { 80, 40 }; // stiffness, hold strength
+      gimbal_motor_control_t roll = { 90, 40 };
+      gimbal_motor_control_t pan = { 100, 40 };
       onboard.set_gimbal_motor_control(tilt, roll, pan, 2, 3, 120);
 
       usleep(100000);
       sdk.state = STATE_SETTING_MESSAGE_RATE;
+    }
       break;
 
     case STATE_SETTING_MESSAGE_RATE:
-
+    {
       // configuration message. Note emit_heartbeat need to emit when using this gSDK. If not, the gSDK will waiting forever.
       printf("Setting message rates...\n");
       uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
@@ -295,67 +299,70 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
 
       usleep(100000);
       sdk.state = STATE_SET_GIMBAL_OFF;
-      break;
+    }
+    break;
 
     case STATE_SET_GIMBAL_OFF:
-
+    {
       printf("Turning off gimbal...\n");
 
-      if(onboard.get_gimbal_status().state == GIMBAL_STATE_ON) {
+      if (onboard.get_gimbal_status().state == GIMBAL_STATE_ON) {
         onboard.set_gimbal_motor_mode(TURN_OFF);
         printf("TURN_OFF! %d \n", onboard.get_gimbal_status().mode);
         sdk.last_time_send = get_time_usec();
-      } else if(onboard.get_gimbal_status().state == GIMBAL_STATE_OFF) {
-        if((get_time_usec() - sdk.last_time_send) > 1000000) {
-          sdk.last_time_send = get_time_usec();                    
+      }
+      else if (onboard.get_gimbal_status().state == GIMBAL_STATE_OFF) {
+        if ((get_time_usec() - sdk.last_time_send) > 1000000) {
+          sdk.last_time_send = get_time_usec();
           sdk.state = STATE_SET_GIMBAL_ON;
         }
       }
-
+    }
       break;
 
     case STATE_SET_GIMBAL_ON:
-
+    {
       printf("Turning on gimbal...\n");
 
-      if(onboard.get_gimbal_status().mode == GIMBAL_STATE_OFF) {
-        onboard.set_gimbal_motor_mode(TURN_ON);                
-        printf("TURN_ON!\n");                
+      if (onboard.get_gimbal_status().mode == GIMBAL_STATE_OFF) {
+        onboard.set_gimbal_motor_mode(TURN_ON);
+        printf("TURN_ON!\n");
         sdk.last_time_send = get_time_usec();
-      } else if(onboard.get_gimbal_status().mode) {
-        if((get_time_usec() - sdk.last_time_send) > 1000000) {
-          sdk.last_time_send = get_time_usec();                    
+      }
+      else if (onboard.get_gimbal_status().mode) {
+        if ((get_time_usec() - sdk.last_time_send) > 1000000) {
+          sdk.last_time_send = get_time_usec();
           sdk.state = STATE_SET_CTRL_GIMBAL_YAW_FOLLOW_MODE;
         }
       }
-
+    }
       break;
 
     case STATE_SET_CTRL_GIMBAL_YAW_FOLLOW_MODE:
-          
+    {
       // Set gimbal axes mode. NOTE: ROLL only allows controlling in ABSOLUTE_FRAME and ANGULAR_RATE.
       printf("Set gimbal's yaw follow mode. %d\n", onboard.get_command_ack_do_mount_configure());
-            
+
       control_gimbal_axis_mode_t pitch, roll, yaw;
       pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
       roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
       yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
       onboard.set_gimbal_axes_mode(pitch, roll, yaw);
-            
+
       // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONFIGURE. 
-      if(onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
+      if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
 
         // Wait 5 seconds to see the effect.
-        if((get_time_usec() - sdk.last_time_send) > 5000000) {
+        if ((get_time_usec() - sdk.last_time_send) > 5000000) {
           sdk.last_time_send = get_time_usec();
           sdk.state = STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CW;
         }
       }
-
+    }
       break;
 
     case STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CW:
-
+    {
       printf("Control gimbal's yaw cw follow mode. %d\n", onboard.get_command_ack_do_mount_control());
       float setpoint_pitch = 40.0;
       float setpoint_roll = 0;
@@ -363,17 +370,17 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
       onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
 
       // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONTROL
-      if(onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) {
-        if((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
+      if (onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) {
+        if ((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
           sdk.last_time_send = get_time_usec(); // Reset time for the next step
           sdk.state = STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CCW; // Switch to move gimbal in CCW
         }
       }
-
+    }
       break;
 
     case STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CCW:
-
+    {
       printf("Control gimbal's yaw ccw follow mode. %d\n", onboard.get_command_ack_do_mount_control());
       float setpoint_pitch = -40.0;
       float setpoint_roll = 0;
@@ -381,34 +388,34 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
       onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
 
       // Check gimbal feedback COMMAND_ACK after sending angle
-      if(onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) {
-        if((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
+      if (onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) {
+        if ((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
           sdk.last_time_send = get_time_usec();
           sdk.state = STATE_SET_CTRL_GIMBAL_SPEED_MODE;
         }
       }
-
+    }
       break;
 
     case STATE_SET_CTRL_GIMBAL_SPEED_MODE:
-
-      printf("Set move gimbal in speed mode.\n");            
-      control_gimbal_axis_mode_t pitch, roll, yaw;            
+    {
+      printf("Set move gimbal in speed mode.\n");
+      control_gimbal_axis_mode_t pitch, roll, yaw;
       pitch.input_mode = CTRL_ANGULAR_RATE;
       roll.input_mode = CTRL_ANGULAR_RATE;
-      yaw.input_mode = CTRL_ANGULAR_RATE;            
+      yaw.input_mode = CTRL_ANGULAR_RATE;
       onboard.set_gimbal_axes_mode(pitch, roll, yaw);
-            
+
       // Check gimbal feedback COMMAND_ACK after sending angle
-      if(onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
+      if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
         sdk.last_time_send = get_time_usec();
         sdk.state = STATE_MOVE_SPEED_MODE;
       }
-
+    }
       break;
 
     case STATE_MOVE_SPEED_MODE:
-
+    {
       printf("Speed control gimbal in speed mode:\n");
 
       // Moving gimbal in speed mode with speed = 10 degree/second
@@ -423,26 +430,26 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
       onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
 
       //Moving gimbal in speed mode about 5 seconds
-      if((get_time_usec() - sdk.last_time_send) > 5000000) {
+      if ((get_time_usec() - sdk.last_time_send) > 5000000) {
         sdk.last_time_send = get_time_usec();
         sdk.state = STATE_MOVE_TO_ZERO;
       }
-
+    }
       break;
 
     case STATE_MOVE_TO_ZERO:
-
+    {
       printf("Set move angle for axes mode.\n");
       control_gimbal_axis_mode_t pitch, roll, yaw;
       pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
       roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-      yaw.input_mode = CTRL_ANGLE_BODY_FRAME;            
+      yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
       onboard.set_gimbal_axes_mode(pitch, roll, yaw);
-            
+
       // Check gimbal feedback COMMAND_ACK after sending angle
-      if(onboard.get_command_ack_do_mount_configure() != MAV_RESULT_ACCEPTED) { 
+      if (onboard.get_command_ack_do_mount_configure() != MAV_RESULT_ACCEPTED) {
         printf("Did not receive ack.\n");
-        break; 
+        break;
       }
 
       printf("Move gimbal to home position.\n");
@@ -451,22 +458,24 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
       float setpoint_yaw = 0;
       onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
 
-      if(onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) { // check for COMMAND_ACK
-        if((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
+      if (onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) { // check for COMMAND_ACK
+        if ((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
           sdk.last_time_send = get_time_usec();
           sdk.state = STATE_SET_GIMBAL_REBOOT;
         }
       }
+    }
       break;
 
     case STATE_SET_GIMBAL_REBOOT:
-
+    {
       printf("Rebooting gimbal.\n");
       onboard.set_gimbal_reboot();
-      if((get_time_usec() - sdk.last_time_send) > 1000000) {
+      if ((get_time_usec() - sdk.last_time_send) > 1000000) {
         sdk.last_time_send = get_time_usec();
         sdk.state = STATE_IDLE;
       }
+    }
       break;
 
   } // switch

@@ -353,7 +353,7 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
       roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
       yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
       onboard.set_gimbal_axes_mode(pitch, roll, yaw);
-      usleep(100000);
+      usleep(10000000);
 
       // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONFIGURE. 
       if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
@@ -367,6 +367,7 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
         }
       } else {
         printf("Mount configure command ACK not received.\n");
+        sdk.state = STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CW;
       }
     }
       break;

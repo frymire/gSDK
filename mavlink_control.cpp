@@ -94,7 +94,7 @@ int gGimbal_sample(int argc, char** argv) {
 			gGimbal_control_sample(gimbal_interface); // sample control
 			//gGimbal_displays(gimbal_interface); // sample display value
 		} else {
-      if(get_time_usec() - sdk.timeout > 100000000) { 
+      if(get_time_usec() - sdk.timeout > 10000000000) { 
         printf("Timed out.\n");
         sdk.state = STATE_IDLE;
       }
@@ -245,7 +245,7 @@ void gGimbal_control_sample(Gimbal_Interface &onboard) {
     case STATE_CHECK_FIRMWARE_VERSION:
     {
       fw_version_t fw = onboard.get_gimbal_version();
-      printf("Firmware Version: %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
+      printf("Firmware Version %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
 
       // This firmware only apply for the firmware version from v7.x.x or above
       if (fw.x >= 7 && fw.y >= 5) {

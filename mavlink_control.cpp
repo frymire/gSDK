@@ -91,6 +91,7 @@ int main(int argc, char** argv) {
     TurnOff(gimbal);
     TurnOn(gimbal);
     Point(gimbal, 80.0, 25.0, 0.0);
+    Point(gimbal, -45.0, -10.0, 30.0);
 
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {

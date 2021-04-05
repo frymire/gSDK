@@ -174,20 +174,20 @@ void CheckFirmwareVersion(Gimbal_Interface &gimbal) {
 void SetMessageRates(Gimbal_Interface &gimbal) {
   
   config_mavlink_message_t message_rates = gimbal.get_gimbal_config_mavlink_msg(); 
-  printf("Heartbeat rate = %d\n", message_rates.emit_heatbeat);
+  printf("Heartbeat rate = %d\n", message_rates.orientation_rate);
   
   printf("Setting message rates...\n");
   uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
   uint8_t status_rate = 1; // 10
   uint8_t enc_value_rate = 1; // 10
   uint8_t enc_type_send = 0;  // angle encoding (0)
-  uint8_t orientation_rate = 10; // 50
+  uint8_t orientation_rate = 5; // 50
   uint8_t imu_rate = 10;
   gimbal.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orientation_rate, imu_rate);
   usleep(3*1000000);
   
   message_rates = gimbal.get_gimbal_config_mavlink_msg();
-  printf("Heartbeat rate = %d\n", message_rates.emit_heatbeat);
+  printf("Heartbeat rate = %d\n", message_rates.orientation_rate);
 }
 
 void TurnOff(Gimbal_Interface &gimbal) {
@@ -468,21 +468,23 @@ void TurnOn(Gimbal_Interface &gimbal) {
 
 void DisplayGimbalStatus(Gimbal_Interface& api) {
 
+  static unsigned long first_time = 0;
+
   gimbal_status_t gimbal_status = api.get_gimbal_status();
 
   printf("Gimbal status: ");
   switch(gimbal_status.state) {
   case GIMBAL_STATE_OFF:
-    printf("OFF\n");
+    printf("OFF, ");
     break;
   case GIMBAL_STATE_ON:
-    printf("OPERATING\n");
+    printf("OPERATING, ");
     break;
   case GIMBAL_STATE_INIT:
-    printf("BUSY\n");
+    printf("BUSY, ");
     break;
   case GIMBAL_STATE_ERROR:
-    printf("ERROR\n");
+    printf("ERROR, ");
     break;
   default:
     printf("Unrecognized gimbal status.\n");
@@ -491,8 +493,10 @@ void DisplayGimbalStatus(Gimbal_Interface& api) {
   mavlink_raw_imu_t imu = api.get_gimbal_raw_imu();
   imu.time_usec = api.get_gimbal_time_stamps().raw_imu;
 
-  printf("Raw IMU: time: %lu, acc-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ", // mag-xyz: [%d, %d, %d]
-    (unsigned long)imu.time_usec / 100000,
+  if(first_time == 0) { first_time = imu.time_usec; }
+
+  printf("raw IMU: time: %lu, acc-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ", // mag-xyz: [%d, %d, %d]
+    (unsigned long) (imu.time_usec - first_time) / 1000000,
     imu.xacc,
     imu.yacc,
     imu.zacc,
@@ -506,7 +510,7 @@ void DisplayGimbalStatus(Gimbal_Interface& api) {
   mavlink_mount_orientation_t mnt_orien = api.get_gimbal_mount_orientation();
   mnt_orien.time_boot_ms = api.get_gimbal_time_stamps().mount_orientation;
 
-  printf("Mount YPR (deg): [%f, %f, %f]; ", // time: %lu, 
+  printf("mount YPR (deg): [%f, %f, %f]; ", // time: %lu, 
     //(unsigned long) mnt_orien.time_boot_ms,
     mnt_orien.yaw,
     mnt_orien.pitch,
@@ -519,7 +523,7 @@ void DisplayGimbalStatus(Gimbal_Interface& api) {
 
   if(api.get_gimbal_config_mavlink_msg().enc_type_send) {
     printf(
-      "\tEncoder Count: time: %lu, p:%d, r:%d, y:%d (Resolution 2^16)\n",
+      "encoder count: time: %lu, p:%d, r:%d, y:%d (Resolution 2^16)\n",
       (unsigned long)mnt_status_time_stamp,
       mnt_status.pointing_a,
       mnt_status.pointing_b,
@@ -527,7 +531,7 @@ void DisplayGimbalStatus(Gimbal_Interface& api) {
   }
   else {
     printf(
-      "\tEncoder Angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
+      "encoder angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
       //(unsigned long) mnt_status_time_stamp,
       mnt_status.pointing_c,
       mnt_status.pointing_a,

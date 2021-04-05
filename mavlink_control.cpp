@@ -55,7 +55,7 @@ void SetMessageRates(Gimbal_Interface &gimbal);
 void PrintMessageRates(config_mavlink_message_t message_rates);
 void TurnOff(Gimbal_Interface &gimbal);
 void TurnOn(Gimbal_Interface &gimbal);
-void Point(Gimbal_Interface &gimbal, yaw, pitch, roll);
+void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 
 Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
@@ -215,7 +215,7 @@ void TurnOn(Gimbal_Interface &gimbal) {
   usleep(5 * 1000000);
 }
 
-void Point(Gimbal_Interface &gimbal, yaw, pitch, roll) {
+void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
   gimbal.set_gimbal_move(pitch, roll, yaw);
   usleep(10 * 1000000);  

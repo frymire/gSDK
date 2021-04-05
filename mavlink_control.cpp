@@ -52,8 +52,10 @@ void DisplayGimbalStatus(Gimbal_Interface& gimbal_interface);
 //void gGimbal_control_sample(Gimbal_Interface &gimbal);
 void CheckFirmwareVersion(Gimbal_Interface &gimbal);
 void SetMessageRates(Gimbal_Interface &gimbal);
+void PrintMessageRates(config_mavlink_message_t message_rates);
 void TurnOff(Gimbal_Interface &gimbal);
 void TurnOn(Gimbal_Interface &gimbal);
+void Point(Gimbal_Interface &gimbal, yaw, pitch, roll);
 
 Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
@@ -88,6 +90,7 @@ int main(int argc, char** argv) {
     SetMessageRates(gimbal);
     TurnOff(gimbal);
     TurnOn(gimbal);
+    Point(gimbal, 80.0, 25.0, 0.0);
 
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {
@@ -174,7 +177,7 @@ void CheckFirmwareVersion(Gimbal_Interface &gimbal) {
 void SetMessageRates(Gimbal_Interface &gimbal) {
   
   config_mavlink_message_t message_rates = gimbal.get_gimbal_config_mavlink_msg(); 
-  printf("Heartbeat rate = %d\n", message_rates.orientation_rate);
+  PrintMessageRates(message_rates);
   
   printf("Setting message rates...\n");
   uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
@@ -182,12 +185,22 @@ void SetMessageRates(Gimbal_Interface &gimbal) {
   uint8_t enc_value_rate = 1; // 10
   uint8_t enc_type_send = 0;  // angle encoding (0)
   uint8_t orientation_rate = 5; // 50
-  uint8_t imu_rate = 10;
+  uint8_t imu_rate = 5;
   gimbal.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orientation_rate, imu_rate);
   usleep(3*1000000);
   
   message_rates = gimbal.get_gimbal_config_mavlink_msg();
-  printf("Heartbeat rate = %d\n", message_rates.orientation_rate);
+  PrintMessageRates(message_rates);
+}
+
+void PrintMessageRates(config_mavlink_message_t message_rates) {
+  printf("Message Rates...\n");
+  printf("  emit_heartbeat = %d\n", message_rates.emit_heatbeat);
+  printf("  enc_type_send = %d\n", message_rates.enc_type_send);
+  printf("  enc_value_rate = %d\n", message_rates.enc_value_rate);
+  printf("  imu_rate = %d\n", message_rates.imu_rate);
+  printf("  orientation_rate = %d\n", message_rates.orientation_rate);
+  printf("  status_rate = %d\n", message_rates.status_rate);
 }
 
 void TurnOff(Gimbal_Interface &gimbal) {
@@ -200,6 +213,13 @@ void TurnOn(Gimbal_Interface &gimbal) {
   printf("Turning on gimbal...\n");
   gimbal.set_gimbal_motor_mode(TURN_ON);
   usleep(5 * 1000000);
+}
+
+void Point(Gimbal_Interface &gimbal, yaw, pitch, roll) {
+  printf("Pointing...\n");
+  gimbal.set_gimbal_move(pitch, roll, yaw);
+  usleep(10 * 1000000);  
+  printf("gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
 }
 
 

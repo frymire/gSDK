@@ -78,11 +78,11 @@ int main(int argc, char** argv) {
     serial_port.start();
     gimbal.start();
 
-    printf("Sleep test, 5 seconds...\n");
-    usleep(5*1000000);
-    printf("Sleep test, done.\n");
-
-    while(!gimbal.present()) {} // spin until the gimbal is ready
+    // Spin until the gimbal is ready
+    while(!gimbal.present()) {
+      printf("Gimbal not present.\n");
+      usleep(1000000);
+    } 
 
     CheckFirmwareVersion(gimbal);
     SetMessageRates(gimbal);
@@ -91,11 +91,8 @@ int main(int argc, char** argv) {
 
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {
-      uint32_t time_ms = (uint32_t) (get_time_usec() / 1000);
-      if ((time_ms % 1000 == 0) && gimbal.present()) {
-        DisplayGimbalStatus(gimbal);
-        //ControlGimbal(gimbal); // sample control
-      }
+      usleep(1000000);
+      DisplayGimbalStatus(gimbal);
     }
 
     gimbal.stop();
@@ -168,21 +165,29 @@ void HandleQuitSignal(int sig) {
 
 
 void CheckFirmwareVersion(Gimbal_Interface &gimbal) {
+  printf("Checking firmware version...\n");
   fw_version_t fw = gimbal.get_gimbal_version();
-  usleep(1000000);
+  usleep(3*1000000);
   printf("Firmware Version %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
 }
 
 void SetMessageRates(Gimbal_Interface &gimbal) {
+  
+  config_mavlink_message_t message_rates = gimbal.get_gimbal_config_mavlink_msg(); 
+  printf("Heartbeat rate = %d\n", message_rates.emit_heatbeat);
+  
   printf("Setting message rates...\n");
-  uint8_t heatbeat_rate = 1; // must be 1, otherwise gSDK will wait forever
+  uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
   uint8_t status_rate = 1; // 10
   uint8_t enc_value_rate = 1; // 10
   uint8_t enc_type_send = 0;  // angle encoding (0)
-  uint8_t orien_rate = 10; // 50
+  uint8_t orientation_rate = 10; // 50
   uint8_t imu_rate = 10;
-  gimbal.set_gimbal_config_mavlink_msg(heatbeat_rate, status_rate, enc_value_rate, enc_type_send, orien_rate, imu_rate);  
-  usleep(1000000);
+  gimbal.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orientation_rate, imu_rate);
+  usleep(3*1000000);
+  
+  message_rates = gimbal.get_gimbal_config_mavlink_msg();
+  printf("Heartbeat rate = %d\n", message_rates.emit_heatbeat);
 }
 
 void TurnOff(Gimbal_Interface &gimbal) {

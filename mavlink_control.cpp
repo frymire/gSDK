@@ -78,6 +78,12 @@ int main(int argc, char** argv) {
     serial_port.start();
     gimbal.start();
 
+    printf("Sleep test, 5 seconds...\n");
+    usleep(5*1000000);
+    printf("Sleep test, done.\n");
+
+    while(!gimbal.present()) {} // spin until the gimbal is ready
+
     CheckFirmwareVersion(gimbal);
     SetMessageRates(gimbal);
     TurnOff(gimbal);
@@ -163,8 +169,8 @@ void HandleQuitSignal(int sig) {
 
 void CheckFirmwareVersion(Gimbal_Interface &gimbal) {
   fw_version_t fw = gimbal.get_gimbal_version();
+  usleep(1000000);
   printf("Firmware Version %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
-  usleep(100000);
 }
 
 void SetMessageRates(Gimbal_Interface &gimbal) {
@@ -176,7 +182,7 @@ void SetMessageRates(Gimbal_Interface &gimbal) {
   uint8_t orien_rate = 10; // 50
   uint8_t imu_rate = 10;
   gimbal.set_gimbal_config_mavlink_msg(heatbeat_rate, status_rate, enc_value_rate, enc_type_send, orien_rate, imu_rate);  
-  usleep(100000);
+  usleep(1000000);
 }
 
 void TurnOff(Gimbal_Interface &gimbal) {

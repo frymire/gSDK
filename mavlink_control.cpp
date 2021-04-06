@@ -252,6 +252,7 @@ void PrintGimbalControlValues(Gimbal_Interface &gimbal) {
   gimbal_motor_control_t tilt, roll, pan;
   uint8_t gyro_filter, output_filter, gain;
   gimbal.get_gimbal_motor_control(tilt, roll, pan, gyro_filter, output_filter, gain);
+  usleep(1000000);
   printf("  Tilt: %d %d", tilt.holdstrength, tilt.stiffness);
   printf("  Roll: %d %d", roll.holdstrength, roll.stiffness);
   printf("  Pan: %d %d", pan.holdstrength, pan.stiffness);

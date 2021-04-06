@@ -282,7 +282,7 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
 //    usleep(10000000);
 //
 //    // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONFIGURE. 
-    if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
+    //if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
 //
 //      printf("Mount configure command ACK received.\n");
 //

@@ -262,8 +262,11 @@ void PrintGimbalControlValues(Gimbal_Interface &gimbal) {
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
   gimbal.set_gimbal_move(pitch, roll, yaw);
-  usleep(10 * 1000000);  
-  printf("gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
+
+  while(true) {
+    usleep(0.5 * 1000000);
+    printf("gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
+  }
 }
 
 

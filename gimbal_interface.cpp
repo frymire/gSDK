@@ -481,13 +481,14 @@ void Gimbal_Interface::param_process(void) {
     param_update();
     if(current_messages.sys_status.errors_count2 == 0x00) {
       _state = GIMBAL_STATE_PRESENT_RUNNING;
+      printf("GIMBAL_STATE_PRESENT_RUNNING \n");
     } else {
       printf("Error: %d\n", current_messages.sys_status.errors_count2);
     }
     break;
 
   case GIMBAL_STATE_PRESENT_RUNNING:
-    printf("GIMBAL_STATE_PRESENT_RUNNING \n");
+    //printf("GIMBAL_STATE_PRESENT_RUNNING \n");
     param_update();
     break;
   }

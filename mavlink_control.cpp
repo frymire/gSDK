@@ -55,6 +55,8 @@ void SetMessageRates(Gimbal_Interface &gimbal);
 void PrintMessageRates(config_mavlink_message_t message_rates);
 void TurnOff(Gimbal_Interface &gimbal);
 void TurnOn(Gimbal_Interface &gimbal);
+void ConfigureGimbalAxes(Gimbal_Interface &gimbal);
+void PrintGimbalControlValues(Gimbal_Interface &gimbal)
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 
 Gimbal_Interface* gimbal_interface_quit;
@@ -90,6 +92,7 @@ int main(int argc, char** argv) {
     SetMessageRates(gimbal);
     TurnOff(gimbal);
     TurnOn(gimbal);
+    ConfigureGimbalAxes(gimbal);
     Point(gimbal, 80.0, 25.0, 0.0);
     Point(gimbal, -45.0, -10.0, 30.0);
 
@@ -216,6 +219,45 @@ void TurnOn(Gimbal_Interface &gimbal) {
   usleep(5 * 1000000);
 }
 
+void ConfigureGimbalAxes(Gimbal_Interface &gimbal) {
+
+  printf("Old gimbal control values...\n");
+  PrintGimbalControlValues(gimbal);
+
+  printf("Configuring gimbal axes...\n");
+  
+  gimbal_config_axis_t config = {0};
+  
+  config = {DIR_CCW, 50, 50, 65, 50, 0};
+  gimbal.set_gimbal_config_tilt_axis(config);
+  
+  config = {DIR_CW, 50, 60, 0, 0, 0};
+  gimbal.set_gimbal_config_roll_axis(config);
+  
+  config = {DIR_CW, 50, 70, 87, 50, 0};
+  gimbal.set_gimbal_config_pan_axis(config);
+  
+  gimbal_motor_control_t tilt = {80, 40}; // stiffness, hold strength
+  gimbal_motor_control_t roll = {90, 40};
+  gimbal_motor_control_t pan = {100, 40};
+  gimbal.set_gimbal_motor_control(tilt, roll, pan, 2, 3, 120);
+  
+  usleep(1000000);
+
+  printf("New gimbal control values...\n");
+  PrintGimbalControlValues(gimbal);
+}
+
+void PrintGimbalControlValues(Gimbal_Interface &gimbal) {
+  gimbal_motor_control_t tilt, roll, pan;
+  uint8_t gyro_filter, output_filter, gain;
+  gimbal.get_gimbal_motor_control(tilt, roll, pan, gyro_filter, output_filter, gain);
+  printf("  Tilt: %d %d", tilt.holdstrength, tilt.stiffness);
+  printf("  Roll: %d %d", roll.holdstrength, roll.stiffness);
+  printf("  Pan: %d %d", pan.holdstrength, pan.stiffness);
+  printf("  Gyro Filter: %d, Output Filter: %d, Gain: %d", gyro_filter, output_filter, gain);
+}
+
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
   gimbal.set_gimbal_move(pitch, roll, yaw);
@@ -224,118 +266,6 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
 }
 
 
-//// Demonstrate how to set gimbal mode and control gimbal angle and speed.
-//void ControlGimbal(Gimbal_Interface &onboard) {
-//
-//  switch (sdk.state) {
-//
-//  case STATE_IDLE:
-//  {
-//    sdk.state = STATE_CHECK_FIRMWARE_VERSION;
-//    sdk.last_time_send = get_time_usec();
-//  }
-//  break;
-//
-//  case STATE_CHECK_FIRMWARE_VERSION:
-//  {
-//    fw_version_t fw = onboard.get_gimbal_version();
-//    printf("Firmware Version %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
-//
-//    // This firmware only apply for the firmware version from v7.x.x or above
-//    if (fw.x >= 7 && fw.y >= 5) {
-//      sdk.state = STATE_SETTING_GIMBAL;
-//    }
-//    else {
-//      //printf("DO NOT SUPPORT FUNCTIONS. Please check the firmware version\n");
-//      //printf("1. MOTOR CONTROL\n");
-//      //printf("2. AXIS CONFIGURATION\n");
-//      //printf("3. MAVLINK MSG RATE CONFIGURATION\n");
-//      sdk.state = STATE_SETTING_GIMBAL; // MEF: Try it anyway!
-//    }
-//
-//    usleep(100000);
-//  }
-//  break;
-//
-//  case STATE_SETTING_GIMBAL:
-//  {
-//    printf("Setting gimbal...\n");
-//
-//    // Setting axis for control. see the struct gimbal_config_axis_t
-//    gimbal_config_axis_t config = { 0 };
-//
-//    config = { DIR_CCW, 50, 50, 65, 50, 0 };
-//    onboard.set_gimbal_config_tilt_axis(config);
-//
-//    config = { DIR_CW, 50, 60, 0, 0, 0 };
-//    onboard.set_gimbal_config_roll_axis(config);
-//
-//    config = { DIR_CW, 50, 70, 87, 50, 0 };
-//    onboard.set_gimbal_config_pan_axis(config);
-//
-//    gimbal_motor_control_t tilt = { 80, 40 }; // stiffness, hold strength
-//    gimbal_motor_control_t roll = { 90, 40 };
-//    gimbal_motor_control_t pan = { 100, 40 };
-//    onboard.set_gimbal_motor_control(tilt, roll, pan, 2, 3, 120);
-//
-//    usleep(100000);
-//    sdk.state = STATE_SETTING_MESSAGE_RATE;
-//  }
-//  break;
-//
-//  case STATE_SETTING_MESSAGE_RATE:
-//  {
-//    // configuration message. Note emit_heartbeat need to emit when using this gSDK. If not, the gSDK will waiting forever.
-//    printf("Setting message rates...\n");
-//    uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
-//    uint8_t status_rate = 1; // 10
-//    uint8_t enc_value_rate = 1; // 10
-//    uint8_t enc_type_send = 0;  // Set type of encoder is angle
-//    uint8_t orien_rate = 10; // 50
-//    uint8_t imu_rate = 10;
-//    onboard.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orien_rate, imu_rate);
-//
-//    usleep(100000);
-//    sdk.state = STATE_SET_GIMBAL_OFF;
-//  }
-//  break;
-//
-//  case STATE_SET_GIMBAL_OFF:
-//  {
-//    printf("Turning off gimbal...\n");
-//
-//    if (onboard.get_gimbal_status().state == GIMBAL_STATE_ON) {
-//      onboard.set_gimbal_motor_mode(TURN_OFF);
-//      printf("TURN_OFF! %d \n", onboard.get_gimbal_status().mode);
-//      sdk.last_time_send = get_time_usec();
-//    }
-//    else if (onboard.get_gimbal_status().state == GIMBAL_STATE_OFF) {
-//      if ((get_time_usec() - sdk.last_time_send) > 1000000) {
-//        sdk.last_time_send = get_time_usec();
-//        sdk.state = STATE_SET_GIMBAL_ON;
-//      }
-//    }
-//  }
-//  break;
-//
-//  case STATE_SET_GIMBAL_ON:
-//  {
-//    printf("Turning on gimbal...\n");
-//
-//    if (onboard.get_gimbal_status().mode == GIMBAL_STATE_OFF) {
-//      onboard.set_gimbal_motor_mode(TURN_ON);
-//      printf("TURN_ON!\n");
-//      sdk.last_time_send = get_time_usec();
-//    }
-//    else if (onboard.get_gimbal_status().mode) {
-//      if ((get_time_usec() - sdk.last_time_send) > 1000000) {
-//        sdk.last_time_send = get_time_usec();
-//        sdk.state = STATE_SET_CTRL_GIMBAL_YAW_FOLLOW_MODE;
-//      }
-//    }
-//  }
-//  break;
-//
 //  case STATE_SET_CTRL_GIMBAL_YAW_FOLLOW_MODE:
 //  {
 //    // Set gimbal axes mode. NOTE: ROLL only allows controlling in ABSOLUTE_FRAME and ANGULAR_RATE.

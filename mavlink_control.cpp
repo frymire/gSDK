@@ -261,12 +261,11 @@ void PrintGimbalControlValues(Gimbal_Interface &gimbal) {
 
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
+  printf("Before: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
   gimbal.set_gimbal_move(pitch, roll, yaw);
-
-  while(true) {
-    usleep(0.5 * 1000000);
-    printf("gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
-  }
+  printf("Just After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
+  usleep(10 * 1000000);
+  printf("10 Seconds After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
 }
 
 
@@ -283,7 +282,7 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
 //    usleep(10000000);
 //
 //    // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONFIGURE. 
-//    if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
+    if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
 //
 //      printf("Mount configure command ACK received.\n");
 //

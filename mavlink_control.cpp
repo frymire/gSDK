@@ -56,7 +56,7 @@ void PrintMessageRates(config_mavlink_message_t message_rates);
 void TurnOff(Gimbal_Interface &gimbal);
 void TurnOn(Gimbal_Interface &gimbal);
 void ConfigureGimbalAxes(Gimbal_Interface &gimbal);
-void PrintGimbalControlValues(Gimbal_Interface &gimbal)
+void PrintGimbalControlValues(Gimbal_Interface &gimbal);
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 
 Gimbal_Interface* gimbal_interface_quit;

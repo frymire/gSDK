@@ -1080,9 +1080,9 @@ Sequence_Numbers Gimbal_Interface::get_gimbal_seq_num(void) { return current_mes
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
-  if(current_messages.time_stamps.command_ack) { // new ack received?
+  //if(current_messages.time_stamps.command_ack) { // new ack received?
     return current_messages.result_cmd_ack_msg_configure;
-  }
+  //}
 }
 
 /**
@@ -1091,9 +1091,9 @@ uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_control(void) {
-  if(current_messages.time_stamps.command_ack) { // new ack received?
+  //if(current_messages.time_stamps.command_ack) { // new ack received?
     return current_messages.result_cmd_ack_msg_control;
-  }
+  //}
 }
 
 void Gimbal_Interface::write_heartbeat(void) {

@@ -98,15 +98,15 @@ int main(int argc, char** argv) {
       usleep(1000000);
     } 
 
-    CheckFirmwareVersion(gimbal);
-    SetMessageRates(gimbal);
-    TurnOff(gimbal);
-    TurnOn(gimbal);
-    ConfigureGimbalAxes(gimbal);
+    //CheckFirmwareVersion(gimbal);
+    //SetMessageRates(gimbal);
+    //TurnOff(gimbal);
+    //TurnOn(gimbal);
+    //ConfigureGimbalAxes(gimbal);
     SetLockMode(gimbal);
     Point(gimbal, 80.0f, 25.0f, -45.0f);
     Point(gimbal, -45.0f, -10.0f, 30.0f);
-    PointHome(gimbal);
+    //PointHome(gimbal);
 
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {

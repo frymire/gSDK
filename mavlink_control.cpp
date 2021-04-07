@@ -59,6 +59,8 @@ void ConfigureGimbalAxes(Gimbal_Interface &gimbal);
 void CheckMountConfigureAck(Gimbal_Interface &gimbal);
 void CheckMountControlAck(Gimbal_Interface &gimbal);
 void PrintGimbalControlValues(Gimbal_Interface &gimbal);
+void SetLockMode(Gimbal_Interface &gimbal);
+void SetFollowMode(Gimbal_Interface &gimbal);
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 void PointHome(Gimbal_Interface &gimbal);
 void WriteGimbalStatus(gimbal_status_t gimbal_status);
@@ -406,9 +408,9 @@ void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
 
   mavlink_mount_status_t mnt_status = gimbal.get_gimbal_mount_status();
   //uint64_t mnt_status_time_stamp = gimbal.get_gimbal_time_stamps().mount_status;
-  WriteEncoderAngles();
+  WriteEncoderAngles(mnt_status);
 
-  gimbal_config_axis_t yaw_axis_settings = gimbal.get_gimbal_config_yaw_axis();
+  gimbal_config_axis_t yaw_axis_settings = gimbal.get_gimbal_config_pan_axis();
   printf("\tYaw axis settings :");
   WriteAxisSettings(yaw_axis_settings);
 

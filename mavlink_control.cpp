@@ -58,6 +58,7 @@ void TurnOn(Gimbal_Interface &gimbal);
 void ConfigureGimbalAxes(Gimbal_Interface &gimbal);
 void PrintGimbalControlValues(Gimbal_Interface &gimbal);
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
+void PointHome(Gimbal_Interface &gimbal);
 
 Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
@@ -93,8 +94,9 @@ int main(int argc, char** argv) {
     TurnOff(gimbal);
     TurnOn(gimbal);
     ConfigureGimbalAxes(gimbal);
-    Point(gimbal, 80.0, 25.0, 0.0);
+    Point(gimbal, 80.0, 25.0, -45.0);
     Point(gimbal, -45.0, -10.0, 30.0);
+    PointHome(gimbal);
 
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {
@@ -256,7 +258,27 @@ void PrintGimbalControlValues(Gimbal_Interface &gimbal) {
   printf("  Tilt: %d %d", tilt.holdstrength, tilt.stiffness);
   printf("  Roll: %d %d", roll.holdstrength, roll.stiffness);
   printf("  Pan: %d %d", pan.holdstrength, pan.stiffness);
-  printf("  Gyro Filter: %d, Output Filter: %d, Gain: %d", gyro_filter, output_filter, gain);
+  printf("  Gyro Filter: %d, Output Filter: %d, Gain: %d\n", gyro_filter, output_filter, gain);
+}
+
+void SetFollowMode(Gimbal_Interface &gimbal) {
+
+  // Set gimbal axes mode. NOTE: ROLL only allows controlling in ABSOLUTE_FRAME and ANGULAR_RATE.
+  printf("Set gimbal's yaw follow mode. %d\n", gimbal.get_command_ack_do_mount_configure());
+  
+  control_gimbal_axis_mode_t pitch, roll, yaw;
+  pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
+  gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
+  usleep(10*1000000);
+  
+  if (gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
+    printf("Mount configure command ACK received.\n");
+    usleep(5*1000000);
+  } else {
+    printf("Mount configure command ACK not received.\n");
+  }
 }
 
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
@@ -268,45 +290,20 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("10 Seconds After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
 }
 
+void PointHome(Gimbal_Interface &gimbal) {
 
-//  case STATE_SET_CTRL_GIMBAL_YAW_FOLLOW_MODE:
-//  {
-//    // Set gimbal axes mode. NOTE: ROLL only allows controlling in ABSOLUTE_FRAME and ANGULAR_RATE.
-//    printf("Set gimbal's yaw follow mode. %d\n", onboard.get_command_ack_do_mount_configure());
-//
-//    control_gimbal_axis_mode_t pitch, roll, yaw;
-//    pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-//    roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-//    yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
-//    onboard.set_gimbal_axes_mode(pitch, roll, yaw);
-//    usleep(10000000);
-//
-//    // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONFIGURE. 
-    //if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
-//
-//      printf("Mount configure command ACK received.\n");
-//
-//      // Wait 5 seconds to see the effect.
-//      if ((get_time_usec() - sdk.last_time_send) > 5000000) {
-//        sdk.last_time_send = get_time_usec();
-//        sdk.state = STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CW;
-//      }
-//    }
-//    else {
-//      printf("Mount configure command ACK not received.\n");
-//      sdk.state = STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CW;
-//    }
-//  }
-//  break;
-//
-//  case STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CW:
-//  {
-//    printf("Control gimbal's yaw cw follow mode. %d\n", onboard.get_command_ack_do_mount_control());
-//    float setpoint_pitch = 25.0;
-//    float setpoint_roll = 0;
-//    float setpoint_yaw = 80.0;
-//    onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
-//
+  printf("Move gimbal to home position.\n");
+  SetFollowMode(gimbal);  
+  gimbal.set_gimbal_move(0, 0, 0);
+  
+  if(gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
+    printf("Mount configure command ACK received.\n");
+    usleep(5*1000000);
+  } else {
+    printf("Mount configure command ACK not received.\n");
+  }
+}
+
 //    // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONTROL
 //    if (onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) {
 //      if ((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
@@ -314,27 +311,7 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
 //        sdk.state = STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CCW; // Switch to move gimbal in CCW
 //      }
 //    }
-//  }
-//  break;
-//
-//  case STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CCW:
-//  {
-//    printf("Control gimbal's yaw ccw follow mode. %d\n", onboard.get_command_ack_do_mount_control());
-//    float setpoint_pitch = -40.0;
-//    float setpoint_roll = 0;
-//    float setpoint_yaw = -170.0;
-//    onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
-//
-//    // Check gimbal feedback COMMAND_ACK after sending angle
-//    if (onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) {
-//      if ((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
-//        sdk.last_time_send = get_time_usec();
-//        sdk.state = STATE_SET_CTRL_GIMBAL_SPEED_MODE;
-//      }
-//    }
-//  }
-//  break;
-//
+
 //  case STATE_SET_CTRL_GIMBAL_SPEED_MODE:
 //  {
 //    printf("Set move gimbal in speed mode.\n");
@@ -371,36 +348,6 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
 //    if ((get_time_usec() - sdk.last_time_send) > 5000000) {
 //      sdk.last_time_send = get_time_usec();
 //      sdk.state = STATE_MOVE_TO_ZERO;
-//    }
-//  }
-//  break;
-//
-//  case STATE_MOVE_TO_ZERO:
-//  {
-//    printf("Set move angle for axes mode.\n");
-//    control_gimbal_axis_mode_t pitch, roll, yaw;
-//    pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-//    roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-//    yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
-//    onboard.set_gimbal_axes_mode(pitch, roll, yaw);
-//
-//    // Check gimbal feedback COMMAND_ACK after sending angle
-//    if (onboard.get_command_ack_do_mount_configure() != MAV_RESULT_ACCEPTED) {
-//      printf("Did not receive ack.\n");
-//      break;
-//    }
-//
-//    printf("Move gimbal to home position.\n");
-//    float setpoint_pitch = 0;
-//    float setpoint_roll = 0;
-//    float setpoint_yaw = 0;
-//    onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
-//
-//    if (onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) { // check for COMMAND_ACK
-//      if ((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
-//        sdk.last_time_send = get_time_usec();
-//        sdk.state = STATE_SET_GIMBAL_REBOOT;
-//      }
 //    }
 //  }
 //  break;

@@ -361,7 +361,7 @@ void Gimbal_Interface::set_param(param_index_t param, int16_t value) {
   _params_list[param].state = PARAM_STATE_ATTEMPTING_TO_SET;
 
   // Prepare command for off-board mode
-  mavlink_param_set_t param_set ={0};
+  mavlink_param_set_t param_set = {0};
 
   param_set.param_value	= value;
   param_set.target_system	= system_id;
@@ -638,7 +638,7 @@ void Gimbal_Interface::set_gimbal_axes_mode(
 void Gimbal_Interface::set_gimbal_move(float tilt, float roll, float pan) {
 
   // Prepare command for off-board mode
-  mavlink_command_long_t comm ={0};
+  mavlink_command_long_t comm = {0};
   comm.target_system = system_id;
   comm.target_component = gimbal_id;
   comm.command = MAV_CMD_DO_MOUNT_CONTROL;
@@ -1080,9 +1080,9 @@ Sequence_Numbers Gimbal_Interface::get_gimbal_seq_num(void) { return current_mes
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
-  //if(current_messages.time_stamps.command_ack) { // new ack received?
+  if(current_messages.time_stamps.command_ack) { // new ack received?
     return current_messages.result_cmd_ack_msg_configure;
-  //}
+  }
 }
 
 /**
@@ -1091,9 +1091,9 @@ uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_control(void) {
-  //if(current_messages.time_stamps.command_ack) { // new ack received?
+  if(current_messages.time_stamps.command_ack) { // new ack received?
     return current_messages.result_cmd_ack_msg_control;
-  //}
+  }
 }
 
 void Gimbal_Interface::write_heartbeat(void) {

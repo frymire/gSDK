@@ -192,19 +192,21 @@ void CheckFirmwareVersion(Gimbal_Interface &gimbal) {
 void SetMessageRates(Gimbal_Interface &gimbal) {
   
   config_mavlink_message_t message_rates = gimbal.get_gimbal_config_mavlink_msg(); 
+  usleep(3*1000000);
   PrintMessageRates(message_rates);
   
   printf("Setting message rates...\n");
   uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
-  uint8_t status_rate = 1; // 10
-  uint8_t enc_value_rate = 1; // 10
+  uint8_t status_rate = 10; // 10
+  uint8_t enc_value_rate = 10; // 10
   uint8_t enc_type_send = 0;  // angle encoding (0)
-  uint8_t orientation_rate = 5; // 50
+  uint8_t orientation_rate = 50; // 50
   uint8_t imu_rate = 5;
   gimbal.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orientation_rate, imu_rate);
   usleep(3*1000000);
   
   message_rates = gimbal.get_gimbal_config_mavlink_msg();
+  usleep(3*1000000);
   PrintMessageRates(message_rates);
 }
 

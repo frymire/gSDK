@@ -61,6 +61,9 @@ void CheckMountControlAck(Gimbal_Interface &gimbal);
 void PrintGimbalControlValues(Gimbal_Interface &gimbal);
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 void PointHome(Gimbal_Interface &gimbal);
+void WriteGimbalStatus(gimbal_status_t gimbal_status);
+void WriteRawIMU(mavlink_raw_imu_t imu);
+void WriteMountOrientation();
 
 Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
@@ -313,8 +316,9 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
 void PointHome(Gimbal_Interface &gimbal) {
 
   printf("Move gimbal to home position.\n");
-  SetFollowMode(gimbal);  
-  gimbal.set_gimbal_move(0.0f, 0.0f, 0.0f);
+  SetFollowMode(gimbal);
+  mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
+  gimbal.set_gimbal_move(mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
   
   if(gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
     printf("Mount configure command ACK received.\n");
@@ -380,12 +384,65 @@ void PointHome(Gimbal_Interface &gimbal) {
 //}
 
 
-void DisplayGimbalStatus(Gimbal_Interface& api) {
+void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
+
+  gimbal_status_t gimbal_status = gimbal.get_gimbal_status();
+  WriteGimbalStatus(gimbal_status);
+
+  mavlink_raw_imu_t imu = gimbal.get_gimbal_raw_imu();
+  imu.time_usec = gimbal.get_gimbal_time_stamps().raw_imu;
 
   static unsigned long first_time = 0;
+  if(first_time == 0) { first_time = imu.time_usec; }
+  printf("time: %lu; ", (unsigned long) (imu.time_usec - first_time) / 1000000);
+  WriteRawIMU(imu);
 
-  gimbal_status_t gimbal_status = api.get_gimbal_status();
+  mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
+  mnt_orien.time_boot_ms = gimbal.get_gimbal_time_stamps().mount_orientation;
+  WriteMountOrientation(mnt_orien);
 
+  mavlink_mount_status_t mnt_status = gimbal.get_gimbal_mount_status();
+  uint64_t mnt_status_time_stamp = gimbal.get_gimbal_time_stamps().mount_status;
+
+  //printf("Got message Mount status.");
+
+  if(gimbal.get_gimbal_config_mavlink_msg().enc_type_send) {
+    printf(
+      "encoder count: time: %lu, y:%d, p:%d, r:%d (Resolution 2^16)\n",
+      (unsigned long) mnt_status_time_stamp,
+      mnt_status.pointing_c,
+      mnt_status.pointing_a,
+      mnt_status.pointing_b
+    );
+  } else {
+    printf(
+      "encoder angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
+      //(unsigned long) mnt_status_time_stamp,
+      mnt_status.pointing_c,
+      mnt_status.pointing_a,
+      mnt_status.pointing_b
+    );
+  }
+
+  gimbal_config_axis_t setting = gimbal.get_gimbal_config_tilt_axis();
+  //printf(
+  //  "\tSETTING TILT: dir %d, speed_follow: %d, speed_control: %d\n", 
+  //  setting.dir,
+  //  setting.speed_follow,
+  //  setting.speed_control);
+
+  gimbal_motor_control_t tilt;
+  gimbal_motor_control_t roll;
+  gimbal_motor_control_t pan;
+  uint8_t output_filter, gyro_filter, gain;
+  gimbal.get_gimbal_motor_control(tilt, roll, pan, gyro_filter, output_filter, gain);
+  //printf("\tMOTOR_CONTROL: GYRO - %d, OUTPUT FILTER - %d, GAIN - %d\n", gyro_filter, output_filter, gain);
+  //printf("\tTILT stiffness %d, hold strength: %d\n", tilt.stiffness, tilt.holdstrength);
+  //printf("\tROLL stiffness %d, hold strength: %d\n", roll.stiffness, roll.holdstrength);
+  //printf("\tPAN  stiffness %d, hold strength: %d\n\n", pan.stiffness, pan.holdstrength);
+}
+
+void WriteGimbalStatus(gimbal_status_t gimbal_status) {
   printf("Gimbal status: ");
   switch(gimbal_status.state) {
   case GIMBAL_STATE_OFF:
@@ -403,14 +460,10 @@ void DisplayGimbalStatus(Gimbal_Interface& api) {
   default:
     printf("Unrecognized gimbal status.\n");
   }
+}
 
-  mavlink_raw_imu_t imu = api.get_gimbal_raw_imu();
-  imu.time_usec = api.get_gimbal_time_stamps().raw_imu;
-
-  if(first_time == 0) { first_time = imu.time_usec; }
-
-  printf("raw IMU: time: %lu, acc-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ", // mag-xyz: [%d, %d, %d]
-    (unsigned long) (imu.time_usec - first_time) / 1000000,
+void WriteRawIMU(mavlink_raw_imu_t imu) {
+  printf("raw IMU: acc-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ", // mag-xyz: [%d, %d, %d]
     imu.xacc,
     imu.yacc,
     imu.zacc,
@@ -420,52 +473,12 @@ void DisplayGimbalStatus(Gimbal_Interface& api) {
     imu.xgyro,
     imu.ygyro,
     imu.zgyro);
+}
 
-  mavlink_mount_orientation_t mnt_orien = api.get_gimbal_mount_orientation();
-  mnt_orien.time_boot_ms = api.get_gimbal_time_stamps().mount_orientation;
-
+void WriteMountOrientation(mavlink_mount_orientation_t mnt_orien) {
   printf("mount YPR (deg): [%f, %f, %f]; ", // time: %lu, 
     //(unsigned long) mnt_orien.time_boot_ms,
     mnt_orien.yaw,
     mnt_orien.pitch,
     mnt_orien.roll);
-
-  mavlink_mount_status_t mnt_status = api.get_gimbal_mount_status();
-  uint64_t mnt_status_time_stamp = api.get_gimbal_time_stamps().mount_status;
-
-  //printf("Got message Mount status.");
-
-  if(api.get_gimbal_config_mavlink_msg().enc_type_send) {
-    printf(
-      "encoder count: time: %lu, p:%d, r:%d, y:%d (Resolution 2^16)\n",
-      (unsigned long)mnt_status_time_stamp,
-      mnt_status.pointing_a,
-      mnt_status.pointing_b,
-      mnt_status.pointing_c);
-  }
-  else {
-    printf(
-      "encoder angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
-      //(unsigned long) mnt_status_time_stamp,
-      mnt_status.pointing_c,
-      mnt_status.pointing_a,
-      mnt_status.pointing_b);
-  }
-
-  gimbal_config_axis_t setting = api.get_gimbal_config_tilt_axis();
-  //printf(
-  //  "\tSETTING TILT: dir %d, speed_follow: %d, speed_control: %d\n", 
-  //  setting.dir,
-  //  setting.speed_follow,
-  //  setting.speed_control);
-
-  gimbal_motor_control_t tilt;
-  gimbal_motor_control_t roll;
-  gimbal_motor_control_t pan;
-  uint8_t output_filter, gyro_filter, gain;
-  api.get_gimbal_motor_control(tilt, roll, pan, gyro_filter, output_filter, gain);
-  //printf("\tMOTOR_CONTROL: GYRO - %d, OUTPUT FILTER - %d, GAIN - %d\n", gyro_filter, output_filter, gain);
-  //printf("\tTILT stiffness %d, hold strength: %d\n", tilt.stiffness, tilt.holdstrength);
-  //printf("\tROLL stiffness %d, hold strength: %d\n", roll.stiffness, roll.holdstrength);
-  //printf("\tPAN  stiffness %d, hold strength: %d\n\n", pan.stiffness, pan.holdstrength);
 }

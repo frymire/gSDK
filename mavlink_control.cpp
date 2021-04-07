@@ -282,13 +282,13 @@ void SetLockMode(Gimbal_Interface &gimbal) {
 
 
 void SetFollowMode(Gimbal_Interface &gimbal) {
-  printf("Set follow mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
-  control_gimbal_axis_mode_t pitch, roll, yaw;
-  pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-  roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
-  yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
-  gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  CheckMountConfigureAck(gimbal);
+  //printf("Set follow mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
+  //control_gimbal_axis_mode_t pitch, roll, yaw;
+  //pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  //roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
+  //yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
+  //gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
+  //CheckMountConfigureAck(gimbal);
 }
 
 void CheckMountConfigureAck(Gimbal_Interface &gimbal) {

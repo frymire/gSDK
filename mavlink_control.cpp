@@ -64,6 +64,8 @@ void PointHome(Gimbal_Interface &gimbal);
 void WriteGimbalStatus(gimbal_status_t gimbal_status);
 void WriteRawIMU(mavlink_raw_imu_t imu);
 void WriteMountOrientation(mavlink_mount_orientation_t mnt_orien);
+void WriteEncoderAngles(mavlink_mount_status_t mnt_status);
+void WriteAxisSettings(gimbal_config_axis_t axis_settings);
 
 Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
@@ -99,6 +101,7 @@ int main(int argc, char** argv) {
     TurnOff(gimbal);
     TurnOn(gimbal);
     ConfigureGimbalAxes(gimbal);
+    SetLockMode(gimbal);
     Point(gimbal, 80.0f, 25.0f, -45.0f);
     Point(gimbal, -45.0f, -10.0f, 30.0f);
     PointHome(gimbal);
@@ -318,7 +321,7 @@ void PointHome(Gimbal_Interface &gimbal) {
   printf("Move gimbal to home position.\n");
   SetFollowMode(gimbal);
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
-  gimbal.set_gimbal_move(mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
+  gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
   
   if(gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
     printf("Mount configure command ACK received.\n");
@@ -394,7 +397,7 @@ void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
 
   static unsigned long first_time = 0;
   if(first_time == 0) { first_time = imu.time_usec; }
-  printf("time: %lu; ", (unsigned long) (imu.time_usec - first_time) / 1000000);
+  printf("; time: %lu", (unsigned long) (imu.time_usec - first_time) / 1000000);
   WriteRawIMU(imu);
 
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
@@ -402,34 +405,12 @@ void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
   WriteMountOrientation(mnt_orien);
 
   mavlink_mount_status_t mnt_status = gimbal.get_gimbal_mount_status();
-  uint64_t mnt_status_time_stamp = gimbal.get_gimbal_time_stamps().mount_status;
+  //uint64_t mnt_status_time_stamp = gimbal.get_gimbal_time_stamps().mount_status;
+  WriteEncoderAngles();
 
-  //printf("Got message Mount status.");
-
-  if(gimbal.get_gimbal_config_mavlink_msg().enc_type_send) {
-    printf(
-      "encoder count: time: %lu, y:%d, p:%d, r:%d (Resolution 2^16)\n",
-      (unsigned long) mnt_status_time_stamp,
-      mnt_status.pointing_c,
-      mnt_status.pointing_a,
-      mnt_status.pointing_b
-    );
-  } else {
-    printf(
-      "encoder angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
-      //(unsigned long) mnt_status_time_stamp,
-      mnt_status.pointing_c,
-      mnt_status.pointing_a,
-      mnt_status.pointing_b
-    );
-  }
-
-  gimbal_config_axis_t setting = gimbal.get_gimbal_config_tilt_axis();
-  //printf(
-  //  "\tSETTING TILT: dir %d, speed_follow: %d, speed_control: %d\n", 
-  //  setting.dir,
-  //  setting.speed_follow,
-  //  setting.speed_control);
+  gimbal_config_axis_t yaw_axis_settings = gimbal.get_gimbal_config_yaw_axis();
+  printf("\tYaw axis settings :");
+  WriteAxisSettings(yaw_axis_settings);
 
   gimbal_motor_control_t tilt;
   gimbal_motor_control_t roll;
@@ -445,25 +426,25 @@ void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
 void WriteGimbalStatus(gimbal_status_t gimbal_status) {
   printf("Gimbal status: ");
   switch(gimbal_status.state) {
-  case GIMBAL_STATE_OFF:
-    printf("OFF, ");
-    break;
-  case GIMBAL_STATE_ON:
-    printf("OPERATING, ");
-    break;
-  case GIMBAL_STATE_INIT:
-    printf("BUSY, ");
-    break;
-  case GIMBAL_STATE_ERROR:
-    printf("ERROR, ");
-    break;
-  default:
-    printf("Unrecognized gimbal status.\n");
+    case GIMBAL_STATE_OFF:
+      printf("OFF");
+      break;
+    case GIMBAL_STATE_ON:
+      printf("ON");
+      break;
+    case GIMBAL_STATE_INIT:
+      printf("INIT");
+      break;
+    case GIMBAL_STATE_ERROR:
+      printf("ERROR");
+      break;
+    default:
+      printf("Unrecognized");
   }
 }
 
 void WriteRawIMU(mavlink_raw_imu_t imu) {
-  printf("raw IMU: acc-xyz: [%d, %d, %d], gyro-xyz: [%d, %d, %d]; ", // mag-xyz: [%d, %d, %d]
+  printf("accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]", // mag-xyz: [%d, %d, %d]
     imu.xacc,
     imu.yacc,
     imu.zacc,
@@ -476,9 +457,37 @@ void WriteRawIMU(mavlink_raw_imu_t imu) {
 }
 
 void WriteMountOrientation(mavlink_mount_orientation_t mnt_orien) {
-  printf("mount YPR (deg): [%f, %f, %f]; ", // time: %lu, 
+  printf("; mount YPR (deg): [%f, %f, %f]", // time: %lu, 
     //(unsigned long) mnt_orien.time_boot_ms,
     mnt_orien.yaw,
     mnt_orien.pitch,
     mnt_orien.roll);
+}
+
+void WriteEncoderAngles(mavlink_mount_status_t mnt_status) {
+  //if(gimbal.get_gimbal_config_mavlink_msg().enc_type_send) {
+  //  printf(
+  //    "encoder count: time: %lu, y:%d, p:%d, r:%d (Resolution 2^16)\n",
+  //    (unsigned long)mnt_status_time_stamp,
+  //    mnt_status.pointing_c,
+  //    mnt_status.pointing_a,
+  //    mnt_status.pointing_b
+  //  );
+  //} else {
+    printf(
+      "encoder angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
+      //(unsigned long) mnt_status_time_stamp,
+      mnt_status.pointing_c,
+      mnt_status.pointing_a,
+      mnt_status.pointing_b
+    );
+  //}
+}
+
+void WriteAxisSettings(gimbal_config_axis_t axis_settings) {
+  printf(
+    "direction %d, follow speed: %d, control speed: %d\n",
+    axis_settings.dir,
+    axis_settings.speed_follow,
+    axis_settings.speed_control);
 }

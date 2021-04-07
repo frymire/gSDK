@@ -56,6 +56,8 @@ void PrintMessageRates(config_mavlink_message_t message_rates);
 void TurnOff(Gimbal_Interface &gimbal);
 void TurnOn(Gimbal_Interface &gimbal);
 void ConfigureGimbalAxes(Gimbal_Interface &gimbal);
+void CheckMountConfigureAck(Gimbal_Interface &gimbal);
+void CheckMountControlAck(Gimbal_Interface &gimbal);
 void PrintGimbalControlValues(Gimbal_Interface &gimbal);
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 void PointHome(Gimbal_Interface &gimbal);
@@ -94,8 +96,8 @@ int main(int argc, char** argv) {
     TurnOff(gimbal);
     TurnOn(gimbal);
     ConfigureGimbalAxes(gimbal);
-    Point(gimbal, 80.0, 25.0, -45.0);
-    Point(gimbal, -45.0, -10.0, 30.0);
+    Point(gimbal, 80.0f, 25.0f, -45.0f);
+    Point(gimbal, -45.0f, -10.0f, 30.0f);
     PointHome(gimbal);
 
     /// Process data until an exit has been signaled.
@@ -112,7 +114,6 @@ int main(int argc, char** argv) {
     return error;
   }
 }
-
 
 void ParseCommandLine(int argc, char** argv, char* &uart_name, int &baudrate) {
 
@@ -212,13 +213,13 @@ void PrintMessageRates(config_mavlink_message_t message_rates) {
 void TurnOff(Gimbal_Interface &gimbal) {
   printf("Turning off gimbal...\n");
   gimbal.set_gimbal_motor_mode(TURN_OFF);
-  usleep(5 * 1000000);
+  usleep(5*1000000);
 }
 
 void TurnOn(Gimbal_Interface &gimbal) {
   printf("Turning on gimbal...\n");
   gimbal.set_gimbal_motor_mode(TURN_ON);
-  usleep(5 * 1000000);
+  usleep(5*1000000);
 }
 
 void ConfigureGimbalAxes(Gimbal_Interface &gimbal) {
@@ -261,23 +262,42 @@ void PrintGimbalControlValues(Gimbal_Interface &gimbal) {
   printf("  Gyro Filter: %d, Output Filter: %d, Gain: %d\n", gyro_filter, output_filter, gain);
 }
 
-void SetFollowMode(Gimbal_Interface &gimbal) {
-
-  // Set gimbal axes mode. NOTE: ROLL only allows controlling in ABSOLUTE_FRAME and ANGULAR_RATE.
-  printf("Set gimbal's yaw follow mode. %d\n", gimbal.get_command_ack_do_mount_configure());
-  
+void SetLockMode(Gimbal_Interface &gimbal) {
+  printf("Setting lock mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
   control_gimbal_axis_mode_t pitch, roll, yaw;
   pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  yaw.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
+  CheckMountConfigureAck(gimbal);
+}
+
+
+void SetFollowMode(Gimbal_Interface &gimbal) {
+  printf("Set follow mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
+  control_gimbal_axis_mode_t pitch, roll, yaw;
+  pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
   yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  usleep(10*1000000);
-  
-  if (gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
-    printf("Mount configure command ACK received.\n");
-    usleep(5*1000000);
+  CheckMountConfigureAck(gimbal);
+}
+
+void CheckMountConfigureAck(Gimbal_Interface &gimbal) {
+  uint8_t ack_result = gimbal.get_command_ack_do_mount_configure();
+  if(ack_result == MAV_RESULT_ACCEPTED) {
+    printf("Mount configure command ACK received. %d\n", ack_result);
   } else {
-    printf("Mount configure command ACK not received.\n");
+    printf("Mount configure command ACK not received. %d\n", ack_result);
+  }
+}
+
+void CheckMountControlAck(Gimbal_Interface &gimbal) {
+  uint8_t ack_result = gimbal.get_command_ack_do_mount_control();
+  if(ack_result == MAV_RESULT_ACCEPTED) {
+    printf("Mount control command ACK received. %d\n", ack_result);
+  } else {
+    printf("Mount control command ACK not received. %d\n", ack_result);
   }
 }
 
@@ -294,7 +314,7 @@ void PointHome(Gimbal_Interface &gimbal) {
 
   printf("Move gimbal to home position.\n");
   SetFollowMode(gimbal);  
-  gimbal.set_gimbal_move(0, 0, 0);
+  gimbal.set_gimbal_move(0.0f, 0.0f, 0.0f);
   
   if(gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
     printf("Mount configure command ACK received.\n");
@@ -304,13 +324,6 @@ void PointHome(Gimbal_Interface &gimbal) {
   }
 }
 
-//    // Check gimbal feedback COMMAND_ACK when sending MAV_CMD_DO_MOUNT_CONTROL
-//    if (onboard.get_command_ack_do_mount_control() == MAV_RESULT_ACCEPTED) {
-//      if ((get_time_usec() - sdk.last_time_send) > 5000000) { // wait 5 seconds
-//        sdk.last_time_send = get_time_usec(); // Reset time for the next step
-//        sdk.state = STATE_MOVE_GIMBAL_YAW_FOLLOW_MODE_CCW; // Switch to move gimbal in CCW
-//      }
-//    }
 
 //  case STATE_SET_CTRL_GIMBAL_SPEED_MODE:
 //  {

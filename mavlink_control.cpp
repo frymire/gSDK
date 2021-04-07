@@ -63,7 +63,7 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 void PointHome(Gimbal_Interface &gimbal);
 void WriteGimbalStatus(gimbal_status_t gimbal_status);
 void WriteRawIMU(mavlink_raw_imu_t imu);
-void WriteMountOrientation();
+void WriteMountOrientation(mavlink_mount_orientation_t mnt_orien);
 
 Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;

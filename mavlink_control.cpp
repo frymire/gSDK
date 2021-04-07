@@ -410,9 +410,10 @@ void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
   //uint64_t mnt_status_time_stamp = gimbal.get_gimbal_time_stamps().mount_status;
   WriteEncoderAngles(mnt_status);
 
-  gimbal_config_axis_t yaw_axis_settings = gimbal.get_gimbal_config_pan_axis();
-  printf("\tYaw axis settings :");
-  WriteAxisSettings(yaw_axis_settings);
+  //// TODO: Just returns a struct full of zeros.
+  //gimbal_config_axis_t yaw_axis_settings = gimbal.get_gimbal_config_pan_axis();
+  //printf("\tYaw axis settings :");
+  //WriteAxisSettings(yaw_axis_settings);
 
   gimbal_motor_control_t tilt;
   gimbal_motor_control_t roll;
@@ -446,7 +447,7 @@ void WriteGimbalStatus(gimbal_status_t gimbal_status) {
 }
 
 void WriteRawIMU(mavlink_raw_imu_t imu) {
-  printf("accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]", // mag-xyz: [%d, %d, %d]
+  printf("; accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]", // mag-xyz: [%d, %d, %d]
     imu.xacc,
     imu.yacc,
     imu.zacc,
@@ -477,7 +478,7 @@ void WriteEncoderAngles(mavlink_mount_status_t mnt_status) {
   //  );
   //} else {
     printf(
-      "encoder angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
+      "; encoder angle YPR (deg): [%d, %d, %d]\n", // time: %lu, 
       //(unsigned long) mnt_status_time_stamp,
       mnt_status.pointing_c,
       mnt_status.pointing_a,

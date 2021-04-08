@@ -360,18 +360,6 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
   SetLockMode(gimbal); // go back to an actual pointing mode
 }
 
-}
-
-
-//  case STATE_SET_CTRL_GIMBAL_SPEED_MODE:
-//  {
-//  }
-//  break;
-//
-//  case STATE_MOVE_SPEED_MODE:
-//  {
-//  break;
-//
 //  case STATE_SET_GIMBAL_REBOOT:
 //  {
 //    printf("Rebooting gimbal.\n");
@@ -381,10 +369,6 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
 //      sdk.state = STATE_IDLE;
 //    }
 //  }
-//  break;
-//
-//  } // switch
-//}
 
 
 void DisplayGimbalStatus(Gimbal_Interface &gimbal) {

@@ -61,6 +61,7 @@ void CheckMountControlAck(Gimbal_Interface &gimbal);
 void PrintGimbalControlValues(Gimbal_Interface &gimbal);
 void SetLockMode(Gimbal_Interface &gimbal);
 void SetFollowMode(Gimbal_Interface &gimbal);
+void SetGimbalSpeed(Gimbal_Interface &gimbal);
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 void PointHome(Gimbal_Interface &gimbal);
 void WriteGimbalStatus(gimbal_status_t gimbal_status);
@@ -105,6 +106,7 @@ int main(int argc, char** argv) {
     //ConfigureGimbalAxes(gimbal);
     SetLockMode(gimbal);
     Point(gimbal, 80.0f, 25.0f, -45.0f);
+    SetGimbalSpeed(gimbal);
     Point(gimbal, -45.0f, -10.0f, 30.0f);
     //PointHome(gimbal);
 
@@ -335,45 +337,51 @@ void PointHome(Gimbal_Interface &gimbal) {
   }
 }
 
+void SetGimbalSpeed(Gimbal_Interface &gimbal) {
+
+  printf("Set move gimbal in speed mode.\n");
+  control_gimbal_axis_mode_t pitch, roll, yaw;
+  pitch.input_mode = CTRL_ANGULAR_RATE;
+  roll.input_mode = CTRL_ANGULAR_RATE;
+  yaw.input_mode = CTRL_ANGULAR_RATE;
+  onboard.set_gimbal_axes_mode(pitch, roll, yaw);
+  
+  //// Check gimbal feedback COMMAND_ACK after sending angle
+  //if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
+  //  sdk.last_time_send = get_time_usec();
+  //  sdk.state = STATE_MOVE_SPEED_MODE;
+  //}
+
+  printf("Speed control gimbal in speed mode:\n");
+  
+  // Moving gimbal in speed mode with speed = 10 degree/second
+  float setpoint_pitch = 0.4; // MEF: Really 10 degrees/second here?
+  float setpoint_roll = 0.4;
+  float setpoint_yaw = 0.4;
+  
+  mavlink_mount_orientation_t mount = onboard.get_gimbal_mount_orientation();
+  printf("YPR: [%2.3f, %2.3f, %2.3f]\n", mount.yaw, mount.pitch, mount.roll);
+  
+  /// Move gimbal in speed mode
+  onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
+  
+  //Moving gimbal in speed mode about 5 seconds
+  //if ((get_time_usec() - sdk.last_time_send) > 5000000) {
+  //  sdk.last_time_send = get_time_usec();
+  //  sdk.state = STATE_MOVE_TO_ZERO;
+  //}
+}
+
+}
+
 
 //  case STATE_SET_CTRL_GIMBAL_SPEED_MODE:
 //  {
-//    printf("Set move gimbal in speed mode.\n");
-//    control_gimbal_axis_mode_t pitch, roll, yaw;
-//    pitch.input_mode = CTRL_ANGULAR_RATE;
-//    roll.input_mode = CTRL_ANGULAR_RATE;
-//    yaw.input_mode = CTRL_ANGULAR_RATE;
-//    onboard.set_gimbal_axes_mode(pitch, roll, yaw);
-//
-//    // Check gimbal feedback COMMAND_ACK after sending angle
-//    if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
-//      sdk.last_time_send = get_time_usec();
-//      sdk.state = STATE_MOVE_SPEED_MODE;
-//    }
 //  }
 //  break;
 //
 //  case STATE_MOVE_SPEED_MODE:
 //  {
-//    printf("Speed control gimbal in speed mode:\n");
-//
-//    // Moving gimbal in speed mode with speed = 10 degree/second
-//    float setpoint_pitch = 0.1; // MEF: Really 10 degrees/second here?
-//    float setpoint_roll = 0;
-//    float setpoint_yaw = 0.1;
-//
-//    mavlink_mount_orientation_t mount = onboard.get_gimbal_mount_orientation();
-//    printf("YPR: [%2.3f, %2.3f, %2.3f]\n", mount.yaw, mount.pitch, mount.roll);
-//
-//    /// Move gimbal in speed mode
-//    onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
-//
-//    //Moving gimbal in speed mode about 5 seconds
-//    if ((get_time_usec() - sdk.last_time_send) > 5000000) {
-//      sdk.last_time_send = get_time_usec();
-//      sdk.state = STATE_MOVE_TO_ZERO;
-//    }
-//  }
 //  break;
 //
 //  case STATE_SET_GIMBAL_REBOOT:

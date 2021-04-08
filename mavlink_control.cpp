@@ -350,13 +350,11 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
     // Do stuff
   //}
   
-  mavlink_mount_orientation_t mount = gimbal.get_gimbal_mount_orientation();
-  printf("YPR: [%2.3f, %2.3f, %2.3f]\n", mount.yaw, mount.pitch, mount.roll);
+  //mavlink_mount_orientation_t mount = gimbal.get_gimbal_mount_orientation();
+  //printf("YPR: [%2.3f, %2.3f, %2.3f]\n", mount.yaw, mount.pitch, mount.roll);
   
-  float pitch = 0.4; // was 0.1
-  float roll = 0.4; // was 0
-  float yaw = 0.4; // was 0.1
-  gimbal.set_gimbal_move(pitch, roll, yaw);   /// "move" gimbal in speed mode to set the rate
+  // "Move" the gimbal in CTRL_ANGULAR_RATE mode to set the rate.
+  gimbal.set_gimbal_move(0.4f, 0.4f, 0.4f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
   usleep(5*1000000);
 
   SetLockMode(gimbal); // go back to an actual pointing mode

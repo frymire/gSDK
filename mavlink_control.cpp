@@ -286,13 +286,13 @@ void SetLockMode(Gimbal_Interface &gimbal) {
 
 
 void SetFollowMode(Gimbal_Interface &gimbal) {
-  //printf("Set follow mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
-  //control_gimbal_axis_mode_t pitch, roll, yaw;
-  //pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-  //roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
-  //yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
-  //gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  //CheckMountConfigureAck(gimbal);
+  printf("Set follow mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
+  control_gimbal_axis_mode_t pitch, roll, yaw;
+  pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
+  yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
+  gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
+  CheckMountConfigureAck(gimbal);
 }
 
 void CheckMountConfigureAck(Gimbal_Interface &gimbal) {
@@ -344,32 +344,22 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
   pitch.input_mode = CTRL_ANGULAR_RATE;
   roll.input_mode = CTRL_ANGULAR_RATE;
   yaw.input_mode = CTRL_ANGULAR_RATE;
-  onboard.set_gimbal_axes_mode(pitch, roll, yaw);
+  gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
   
-  //// Check gimbal feedback COMMAND_ACK after sending angle
   //if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
-  //  sdk.last_time_send = get_time_usec();
-  //  sdk.state = STATE_MOVE_SPEED_MODE;
+    // Do stuff
   //}
-
-  printf("Speed control gimbal in speed mode:\n");
   
-  // Moving gimbal in speed mode with speed = 10 degree/second
-  float setpoint_pitch = 0.4; // MEF: Really 10 degrees/second here?
-  float setpoint_roll = 0.4;
-  float setpoint_yaw = 0.4;
-  
-  mavlink_mount_orientation_t mount = onboard.get_gimbal_mount_orientation();
+  mavlink_mount_orientation_t mount = gimbal.get_gimbal_mount_orientation();
   printf("YPR: [%2.3f, %2.3f, %2.3f]\n", mount.yaw, mount.pitch, mount.roll);
   
-  /// Move gimbal in speed mode
-  onboard.set_gimbal_move(setpoint_pitch, setpoint_roll, setpoint_yaw);
-  
-  //Moving gimbal in speed mode about 5 seconds
-  //if ((get_time_usec() - sdk.last_time_send) > 5000000) {
-  //  sdk.last_time_send = get_time_usec();
-  //  sdk.state = STATE_MOVE_TO_ZERO;
-  //}
+  float pitch = 0.4; // was 0.1
+  float roll = 0.4; // was 0
+  float yaw = 0.4; // was 0.1
+  gimbal.set_gimbal_move(pitch, roll, yaw);   /// "move" gimbal in speed mode to set the rate
+  usleep(5*1000000);
+
+  SetLockMode(gimbal); // go back to an actual pointing mode
 }
 
 }

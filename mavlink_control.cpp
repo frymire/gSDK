@@ -330,9 +330,10 @@ void PointHome(Gimbal_Interface &gimbal) {
 
   printf("Move gimbal to home position.\n");
   SetFollowMode(gimbal);
-  mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
-  gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
-  
+  //mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
+  //gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
+  gimbal.set_gimbal_move(0.0f, 0.0f, 0.0f);
+
   if(gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
     printf("Mount configure command ACK received.\n");
     usleep(5*1000000);

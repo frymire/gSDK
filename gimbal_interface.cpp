@@ -147,26 +147,27 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_HEARTBEAT:
       {
-        printf("MAVLINK_MSG_ID_HEARTBEAT\n");
+        printf("MAVLINK_MSG_ID_HEARTBEAT. ");
         mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
         current_messages.time_stamps.heartbeat = get_time_usec();
         this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
 
+        // If this is the first time we have detected the heartbeat, store the system and component IDs.
         if(has_detected == false) {
-
-          // Store message sysid and compid.
-          // Note this doesn't handle multiple message sources.
-          current_messages.sysid  = message.sysid;
+          current_messages.sysid = message.sysid;
           current_messages.compid = message.compid;
-
+          printf("First heartbeat detected. System ID = %d. Component ID = %d. ", message.sysid, message.compid);
           has_detected = true;
         }
 
         // Get time
         _last_report_msg_us = get_time_usec();
 
+        // Get channel status
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.heartbeat = chan_status->current_rx_seq;
+
+        printf("")
         break;
       }
 
@@ -220,10 +221,12 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_COMMAND_ACK:
       {
-        printf("MAVLINK_MSG_ID_COMMAND_ACK\n");
-        mavlink_command_ack_t packet;
 
+        mavlink_command_ack_t packet;
         mavlink_msg_command_ack_decode(&message, &packet);
+
+        printf("MAVLINK_MSG_ID_COMMAND_ACK. command = %d, progress = %d, result = %d\n", packet.command, packet.progress, packet.result);
+
         current_messages.time_stamps.command_ack = get_time_usec();
         this_timestamps.command_ack = current_messages.time_stamps.command_ack;
 

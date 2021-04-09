@@ -80,12 +80,9 @@ struct Time_Stamps {
   }
 };
 
-struct Sequence_Numbers
-{
-  Sequence_Numbers()
-  {
-    reset_seq_num();
-  }
+struct Sequence_Numbers {
+
+  Sequence_Numbers() { reset_seq_num(); }
 
   uint8_t heartbeat;
   uint8_t sys_status;
@@ -94,14 +91,13 @@ struct Sequence_Numbers
   uint8_t raw_imu;
   uint8_t command_ack;
 
-  void reset_seq_num()
-  {
-    heartbeat 				= 0;
-    sys_status 				= 0;
-    mount_status 			= 0;
-    mount_orientation 		= 0;
-    raw_imu 				= 0;
-    command_ack 			= 0;
+  void reset_seq_num() {
+    heartbeat = 0;
+    sys_status = 0;
+    mount_status = 0;
+    mount_orientation = 0;
+    raw_imu = 0;
+    command_ack = 0;
   }
 };
 
@@ -565,8 +561,8 @@ private:
   Serial_Port* serial_port;
 
   bool time_to_exit;
-  bool has_detected;
-  uint32_t _last_report_msg_us;
+  bool has_detected; // really, "heartbeat_detected"
+  uint32_t _last_report_msg_us; // time heartbeat was last detected
 
   pthread_t read_tid;
   pthread_t write_tid;
@@ -577,7 +573,7 @@ private:
   //void write_setpoint();
   void write_heartbeat(void);
 
-  Mavlink_Messages current_messages;
+  Mavlink_Messages current_messages; // really, most recent message
 
   gimbal_status_t gimbal_status;
 

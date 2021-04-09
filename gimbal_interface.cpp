@@ -678,7 +678,6 @@ void Gimbal_Interface::set_gimbal_mode(control_gimbal_mode_t mode) {
     return;
 }
 
-
 void Gimbal_Interface::set_gimbal_axes_mode(
   control_gimbal_axis_mode_t tilt,
   control_gimbal_axis_mode_t roll,

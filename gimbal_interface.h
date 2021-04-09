@@ -184,14 +184,10 @@ typedef struct _version {
  * @brief _control_gimbal_axis_mode_t
  * Command control gimbal for each axis
  */
-typedef struct _control_gimbal_axis_mode_t
-{
-  /* stabilize? (1 = yes, 0 = no)*/
-  uint8_t stabilize;
-
-  control_gimbal_axis_input_mode_t    input_mode;
-
-}control_gimbal_axis_mode_t;
+typedef struct _control_gimbal_axis_mode_t {
+  uint8_t stabilize; /* stabilize? (1 = yes, 0 = no)*/
+  control_gimbal_axis_input_mode_t input_mode;
+} control_gimbal_axis_mode_t;
 
 
 /**

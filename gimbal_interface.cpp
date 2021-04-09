@@ -268,12 +268,12 @@ void Gimbal_Interface::read_messages() {
             switch(_params_list[i].state) {
 
               case PARAM_STATE_NONEXISTANT:
-                printf("PARAM_STATE_NONEXISTANT. i = %d\n", i);
-                exit(-1);
+                printf("Got parameter (PARAM_STATE_NONEXISTANT, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
+                //exit(-1);
                 break;
 
               case PARAM_STATE_NOT_YET_READ:
-                printf("PARAM_STATE_NOT_YET_READ. i = %d\n", i);
+                printf("Got parameter (PARAM_STATE_NOT_YET_READ, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
                 //exit(-1);
                 break;
 
@@ -285,15 +285,15 @@ void Gimbal_Interface::read_messages() {
 
               case PARAM_STATE_CONSISTENT:
                 _params_list[i].value = (int16_t) packet.param_value;
-                printf("Got parameter (consistent) %s = %d\n", get_param_name((param_index_t)i), _params_list[i].value);
+                printf("Got parameter (consistent) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
                 break;
 
               case PARAM_STATE_ATTEMPTING_TO_SET:
                 if(packet.param_value == _params_list[i].value) {
-                  printf("Successfully set parameter %s = %d\n", get_param_name((param_index_t)i), _params_list[i].value);
+                  printf("Successfully set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
                   _params_list[i].state = PARAM_STATE_CONSISTENT;
                 } else {
-                  printf("Still attempting to set parameter %s = %d\n", get_param_name((param_index_t)i), _params_list[i].value);                  
+                  printf("Still attempting to set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);                  
                 }
                 break;
 

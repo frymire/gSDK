@@ -177,10 +177,15 @@ void Gimbal_Interface::read_messages() {
         last_message.time_stamps.sys_status = get_time_usec();
         this_timestamps.sys_status = last_message.time_stamps.sys_status;
 
-        mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.sys_status = chan_status->current_rx_seq;
+        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+        this_seq_num.sys_status = channel_status->current_rx_seq;
 
-        printf("MAVLINK_MSG_ID_SYS_STATUS\n");
+        printf(
+          "MAVLINK_MSG_ID_SYS_STATUS. control_sensors_enabled = %d, control_sensors_health = %d, control_sensors_present = %d\n",
+          last_message.sys_status.onboard_control_sensors_enabled,
+          last_message.sys_status.onboard_control_sensors_health,
+          last_message.sys_status.onboard_control_sensors_present
+        );
         break;
       }
 
@@ -198,13 +203,20 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_MOUNT_ORIENTATION:
       {
-        printf("MAVLINK_MSG_ID_MOUNT_ORIENTATION\n");
         mavlink_msg_mount_orientation_decode(&message, &(last_message.mount_orientation));
         last_message.time_stamps.mount_orientation = get_time_usec();
         this_timestamps.mount_orientation = last_message.time_stamps.mount_orientation;
 
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.mount_orientation = chan_status->current_rx_seq;
+
+        printf(
+          "MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
+          last_message.mount_orientation.yaw,
+          last_message.mount_orientation.pitch,
+          last_message.mount_orientation.roll,
+          last_message.mount_orientation.yaw_absolute
+        );
         break;
       }
 

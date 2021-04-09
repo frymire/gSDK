@@ -100,9 +100,9 @@ int main(int argc, char** argv) {
     } 
 
     CheckFirmwareVersion(gimbal);
-    //SetMessageRates(gimbal);
-    //TurnOff(gimbal);
-    //TurnOn(gimbal);
+    SetMessageRates(gimbal);
+    TurnOff(gimbal);
+    TurnOn(gimbal);
     ConfigureGimbalAxes(gimbal);
     SetLockMode(gimbal);
     Point(gimbal, 80.0f, 25.0f, -45.0f);
@@ -247,15 +247,15 @@ void ConfigureGimbalAxes(Gimbal_Interface &gimbal) {
   config = {DIR_CCW, 50, 50, 65, 50, 0};
   gimbal.set_gimbal_config_tilt_axis(config);
   
-  //config = {DIR_CW, 50, 60, 0, 0, 0}; // TODO: uncomment this.
+  config = {DIR_CW, 50, 60, 0, 0, 0};
   gimbal.set_gimbal_config_roll_axis(config);
   
-  config = {DIR_CW, 50, 70, 87, 50, 50}; // {DIR_CW, 50, 70, 87, 50, 0};
+  config = {DIR_CW, 50, 70, 87, 50, 0};
   gimbal.set_gimbal_config_pan_axis(config);
   
   gimbal_motor_control_t tilt = {80, 40}; // stiffness, hold strength
   gimbal_motor_control_t roll = {90, 40};
-  gimbal_motor_control_t pan = {100, 40}; // 100, 40
+  gimbal_motor_control_t pan = {100, 40};
   gimbal.set_gimbal_motor_control(tilt, roll, pan, 2, 3, 120);
   
   usleep(1000000);
@@ -316,11 +316,11 @@ void CheckMountControlAck(Gimbal_Interface &gimbal) {
 
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
-  printf("Before: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
+  //printf("Before: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
   gimbal.set_gimbal_move(pitch, roll, yaw);
-  printf("Just After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
+  //printf("Just After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
   usleep(10 * 1000000);
-  printf("10 Seconds After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
+  //printf("10 Seconds After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
 }
 
 void PointHome(Gimbal_Interface &gimbal) {

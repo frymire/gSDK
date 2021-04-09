@@ -140,7 +140,7 @@ void Gimbal_Interface::read_messages() {
     // ----------------------------------------------------------------------
     //   HANDLE MESSAGE
     // ----------------------------------------------------------------------
-    if(success) {
+    if (success) {
 
       // Handle Message ID
       switch(message.msgid) {
@@ -191,13 +191,19 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_MOUNT_STATUS:
       {
-        printf("MAVLINK_MSG_ID_MOUNT_STATUS\n");
         mavlink_msg_mount_status_decode(&message, &(last_message.mount_status));
         last_message.time_stamps.mount_status = get_time_usec();
         this_timestamps.mount_status = last_message.time_stamps.mount_status;
 
-        mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.mount_status = chan_status->current_rx_seq;
+        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+        this_seq_num.mount_status = channel_status->current_rx_seq;
+
+        printf(
+          "MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
+          last_message.mount_status.pointing_c,
+          last_message.mount_status.pointing_a,
+          last_message.mount_status.pointing_b
+        );
         break;
       }
 
@@ -222,13 +228,26 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_RAW_IMU:
       {
-        printf("MAVLINK_MSG_ID_RAW_IMU\n");
         mavlink_msg_raw_imu_decode(&message, &(last_message.raw_imu));
         last_message.time_stamps.raw_imu = get_time_usec();
         this_timestamps.raw_imu = last_message.time_stamps.raw_imu;
 
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.raw_imu = chan_status->current_rx_seq;
+
+        printf(
+          "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // mag-xyz: [%d, %d, %d]
+          last_message.raw_imu.xacc,
+          last_message.raw_imu.yacc,
+          last_message.raw_imu.zacc,
+          //last_message.raw_imu.xmag,
+          //last_message.raw_imu.ymag,
+          //last_message.raw_imu.zmag,
+          last_message.raw_imu.xgyro,
+          last_message.raw_imu.ygyro,
+          last_message.raw_imu.zgyro
+        );
+
         break;
       }
 

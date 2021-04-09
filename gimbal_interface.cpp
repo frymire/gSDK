@@ -128,6 +128,8 @@ void Gimbal_Interface::read_messages() {
   Sequence_Numbers this_seq_num;
   bool received_all = false;  // receive only one message
 
+  uint8_t last_message_seq = 255;
+
   // Blocking wait for new data
   while(!exit_signalled) {
 
@@ -137,24 +139,35 @@ void Gimbal_Interface::read_messages() {
     mavlink_message_t message;
     success = serial_port->read_message(message);
 
-    printf(
-      "Message: ID = %d, seq = %d, length = %d\n",
-      message.msgid,
-      message.seq,
-      message.len
-    );
+    if(!success) {
+      printf("Failed to read from serial port.\n");
+      exit(-1);
+    }
+
+    if(message.seq != last_message_seq) {
+
+      printf(
+        "Message: ID = %d, seq = %d, length = %d\n",
+        message.msgid,
+        message.seq,
+        message.len
+      );
+
+      last_message_seq = message.seq;
+    //}
+
 
     // ----------------------------------------------------------------------
     //   HANDLE MESSAGE
     // ----------------------------------------------------------------------
-    if (success) {
+    //if (success) {
 
       // Handle Message ID
       switch(message.msgid) {
 
       case MAVLINK_MSG_ID_HEARTBEAT:
       {
-        printf("MAVLINK_MSG_ID_HEARTBEAT. ");
+        printf("MAVLINK_MSG_ID_HEARTBEAT. seq = % ", message.seq);
         mavlink_msg_heartbeat_decode(&message, &(last_message.heartbeat));
         last_message.time_stamps.heartbeat = get_time_usec();
         this_timestamps.heartbeat = last_message.time_stamps.heartbeat;
@@ -279,7 +292,8 @@ void Gimbal_Interface::read_messages() {
         this_seq_num.command_ack = channel_status->current_rx_seq;
 
         printf(
-          "MAVLINK_MSG_ID_COMMAND_ACK. command = %d, progress = %d, result = %d, result_param2 = %d\n",
+          "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d, result_param2 = %d\n",
+          message.seq,
           packet.command,
           packet.progress,
           packet.result,
@@ -296,7 +310,8 @@ void Gimbal_Interface::read_messages() {
         mavlink_msg_param_value_decode(&message, &packet);
 
         printf(
-          "MAVLINK_MSG_ID_PARAM_VALUE. ID = %s, index = %d, type = %d, value = %f\n",
+          "MAVLINK_MSG_ID_PARAM_VALUE. seq = %d, ID = %s, index = %d, type = %d, value = %f\n",
+          message.seq,
           packet.param_id,
           packet.param_index,
           packet.param_type,

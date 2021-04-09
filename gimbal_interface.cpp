@@ -259,6 +259,7 @@ void Gimbal_Interface::read_messages() {
         );
 
         for(uint8_t i = 0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
+
           // Compare the index from gimbal with the param list 
           if(packet.param_index == _params_list[i].gmb_idx) {
 
@@ -266,24 +267,35 @@ void Gimbal_Interface::read_messages() {
 
             switch(_params_list[i].state) {
 
-            case PARAM_STATE_NONEXISTANT:
-            case PARAM_STATE_NOT_YET_READ:
-            case PARAM_STATE_FETCH_AGAIN:
-              _params_list[i].value = packet.param_value;
-              _params_list[i].state = PARAM_STATE_CONSISTENT;
+              case PARAM_STATE_NONEXISTANT:
+                printf("PARAM_STATE_NONEXISTANT. i = %d\n", i);
+                exit(-1);
+                break;
 
-              printf("GOT [%s] %d\n", get_param_name((param_index_t)i), _params_list[i].value);
-              break;
-            case PARAM_STATE_CONSISTENT:
-              _params_list[i].value = (int16_t)packet.param_value;
+              case PARAM_STATE_NOT_YET_READ:
+                printf("PARAM_STATE_NOT_YET_READ. i = %d\n", i);
+                exit(-1);
+                break;
 
-              break;
-            case PARAM_STATE_ATTEMPTING_TO_SET:
-              if(packet.param_value == _params_list[i].value)
-              {
+              case PARAM_STATE_FETCH_AGAIN:
+                _params_list[i].value = packet.param_value;
                 _params_list[i].state = PARAM_STATE_CONSISTENT;
-              }
-              break;
+                printf("Got parameter (fetch again) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+                break;
+
+              case PARAM_STATE_CONSISTENT:
+                _params_list[i].value = (int16_t) packet.param_value;
+                printf("Got parameter (consistent) %s = %d\n", get_param_name((param_index_t)i), _params_list[i].value);
+                break;
+
+              case PARAM_STATE_ATTEMPTING_TO_SET:
+                if(packet.param_value == _params_list[i].value) {
+                  printf("Successfully set parameter %s = %d\n", get_param_name((param_index_t)i), _params_list[i].value);
+                  _params_list[i].state = PARAM_STATE_CONSISTENT;
+                } else {
+                  printf("Still attempting to set parameter %s = %d\n", get_param_name((param_index_t)i), _params_list[i].value);                  
+                }
+                break;
 
             } // switch _params_list[i].state
 
@@ -360,12 +372,11 @@ bool Gimbal_Interface::params_received_all() {
   return true;
 }
 
-void Gimbal_Interface::get_param(param_index_t param, int16_t& value, int16_t val) {
-
+void Gimbal_Interface::get_param(param_index_t param, int16_t &value, int16_t val) {
   if(!_params_list[param].seen) {
+    printf("Warning: Parameter not seen, get_param returning default value.\n");
     value = val;
-  }
-  else {
+  } else {
     value = _params_list[param].value;
   }
 }
@@ -373,18 +384,21 @@ void Gimbal_Interface::get_param(param_index_t param, int16_t& value, int16_t va
 void Gimbal_Interface::set_param(param_index_t param, int16_t value) {
 
   if((_params_list[param].state == PARAM_STATE_CONSISTENT) && (_params_list[param].value == value)) { return; }
-  if(_params_list[param].state == PARAM_STATE_NONEXISTANT) { return; }
+
+  if(_params_list[param].state == PARAM_STATE_NONEXISTANT) { 
+    printf("Warning: parameter %d does not exist\n", param);
+    exit(-1);
+    //return; 
+  }
 
   _params_list[param].value = value;
   _params_list[param].state = PARAM_STATE_ATTEMPTING_TO_SET;
 
   // Prepare command for off-board mode
-  mavlink_param_set_t param_set ={0};
-
+  mavlink_param_set_t param_set = {0};
   param_set.param_value	= value;
   param_set.target_system	= system_id;
   param_set.target_component = gimbal_id;
-
   mav_array_memcpy(param_set.param_id, get_param_name(param), sizeof(char)*16);
   param_set.param_type = MAVLINK_TYPE_UINT16_T;
 
@@ -731,42 +745,45 @@ void Gimbal_Interface::set_gimbal_motor_control(
  * 	GAIN 			120		120		120
  */
 void Gimbal_Interface::get_gimbal_motor_control(
-  gimbal_motor_control_t& tilt,
-  gimbal_motor_control_t& roll,
-  gimbal_motor_control_t& pan,
-  uint8_t& gyro_filter,
-  uint8_t& output_filter,
-  uint8_t& gain) {
+  gimbal_motor_control_t &tilt,
+  gimbal_motor_control_t &roll,
+  gimbal_motor_control_t &pan,
+  uint8_t &gyro_filter,
+  uint8_t &output_filter,
+  uint8_t &gain) {
 
   int16_t value = 0;
 
   get_param(GMB_PARAM_STIFFNESS_PITCH, value);
-  printf("Pitch stiffness: %d", value);
+  printf("Pitch stiffness = %d, ", value);
   tilt.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_PITCH, value);
-  printf("Pitch hold strength: %d", value);
+  printf("Pitch hold strength = %d, ", value);
   tilt.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_ROLL, value);
-  printf("Roll stiffness: %d", value);
+  printf("Roll stiffness = %d, ", value);
   roll.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_ROLL, value);
-  printf("Roll hold strength: %d", value); 
+  printf("Roll hold strength = %d, ", value); 
   roll.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_YAW, value);
-  printf("Yaw stiffness: %d", value);
+  printf("Yaw stiffness = %d, ", value);
   pan.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_YAW, value);
-  printf("Yaw hold strength: %d", value);
+  printf("Yaw hold strength = %d, ", value);
   pan.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_OUTPUT_FILTER, value);
-  output_filter	= (uint8_t)value;
+  printf("Output filter = %d, ", value); 
+  output_filter	= (uint8_t) value;
   get_param(GMB_PARAM_GYRO_FILTER, value);
-  gyro_filter = (uint8_t)value;
+  printf("Gyro filter = %d, ", value);
+  gyro_filter = (uint8_t) value;
   get_param(GMB_PARAM_GAIN, value);
-  gain	= (uint8_t)value;
+  printf("Gain = %d\n", value);
+  gain= (uint8_t) value;
 }
 
 /**

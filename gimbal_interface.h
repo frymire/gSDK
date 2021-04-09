@@ -251,24 +251,18 @@ typedef struct _config_mavlink_message_t
  * Holdstrength: Power level required for the corresponding axis.
  *				This option is only recommended for advanced users. Set 40 as defaults
  */
-typedef struct _gimbal_motor_control_t
-{
+typedef struct _gimbal_motor_control_t {
   uint8_t stiffness;
   uint8_t	holdstrength;
 } gimbal_motor_control_t;
 
 
-/**
- * @brief control_motor_t
- * Command control motor is on/off
- */
-enum param_state_t
-{
-  PARAM_STATE_NOT_YET_READ 		= 0,	// parameter has yet to be initialized
-  PARAM_STATE_FETCH_AGAIN			= 1,	// parameter is being fetched
-  PARAM_STATE_ATTEMPTING_TO_SET   = 2,	// parameter is being set
-  PARAM_STATE_CONSISTENT			= 3,	// parameter is consistent
-  PARAM_STATE_NONEXISTANT			= 4		// parameter does not seem to exist
+enum param_state_t {
+  PARAM_STATE_NOT_YET_READ = 0,	// parameter has yet to be initialized
+  PARAM_STATE_FETCH_AGAIN	= 1,	// parameter is being fetched
+  PARAM_STATE_ATTEMPTING_TO_SET = 2,	// parameter is being set
+  PARAM_STATE_CONSISTENT = 3,	// parameter is consistent
+  PARAM_STATE_NONEXISTANT	= 4		// parameter does not seem to exist
 };
 
 
@@ -590,12 +584,12 @@ private:
   bool params_received_all();
   void fetch_params();
 
-  void get_param(param_index_t param, int16_t& value, int16_t def_value = 0);
+  void get_param(param_index_t param, int16_t &value, int16_t def_value = 0);
   void set_param(param_index_t param, int16_t value);
 
   void param_update();
   void param_process(void);
-  void handle_param_value(mavlink_message_t *msg);
+  //void handle_param_value(mavlink_message_t *msg);
 
   const char* get_param_name(param_index_t param) { return _params_list[param].gmb_id; }
   const uint8_t get_gmb_index(param_index_t param) { return _params_list[param].gmb_idx; }

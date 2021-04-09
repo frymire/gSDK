@@ -1334,7 +1334,7 @@ uint32_t time_send_param, time_send_heartbeat;
 
 void Gimbal_Interface::write_thread(void) {
 
-  while(!writing_status and !time_to_exit) { // Blocking wait for new data
+  while(!writing_status and !exit_signalled) { // Blocking wait for new data
 
     uint32_t tnow_ms = get_time_usec();
     writing_status = true; // signal startup

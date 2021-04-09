@@ -139,12 +139,7 @@ void Gimbal_Interface::read_messages() {
     mavlink_message_t message;
     success = serial_port->read_message(message);
 
-    if(!success) {
-      printf("Failed to read from serial port.\n");
-      exit(-1);
-    }
-
-    if(message.seq != last_message_seq) {
+    if(success && (message.seq != last_message_seq)) {
 
       printf(
         "Message: ID = %d, seq = %d, length = %d\n",

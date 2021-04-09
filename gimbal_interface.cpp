@@ -95,22 +95,22 @@ Gimbal_Interface::Gimbal_Interface(Serial_Port* serial_port_) {
 
   reading_status = 0; // whether the read thread is running
   writing_status = 0; // whether the write thread is running
-  time_to_exit = false; // flag to signal thread exit
-  has_detected = false;	// flag to detect gimbal
+  exit_signalled = false; // flag to signal thread exit
+  heartbeat_detected = false;	// flag to detect gimbal
 
-  read_tid  = 0; // read thread id
+  read_tid = 0; // read thread id
   write_tid = 0; // write thread id
 
   system_id = 0; // system id
   gimbal_id = MAV_COMP_ID_GIMBAL; // gimbal component id
   companion_id = MAV_COMP_ID_SYSTEM_CONTROL; // companion computer component id
 
-  current_messages.sysid  = system_id;
-  current_messages.compid = gimbal_id;
-  current_messages.sys_status.errors_count2 = 0;
-  current_messages.sys_status.errors_count1 = 0;
+  last_message.sysid = system_id;
+  last_message.compid = gimbal_id;
+  last_message.sys_status.errors_count2 = 0;
+  last_message.sys_status.errors_count1 = 0;
 
-  _state = GIMBAL_STATE_NOT_PRESENT;
+  gimbal_state = GIMBAL_STATE_NOT_PRESENT;
 
   serial_port = serial_port_; // serial port management object
 }
@@ -123,13 +123,13 @@ Gimbal_Interface::~Gimbal_Interface() {}
 // ------------------------------------------------------------------------------
 void Gimbal_Interface::read_messages() {
 
-  bool success;           // receive success flag
+  bool success; // receive success flag
   Time_Stamps this_timestamps;
   Sequence_Numbers this_seq_num;
   bool received_all = false;  // receive only one message
 
   // Blocking wait for new data
-  while(!time_to_exit) {
+  while(!exit_signalled) {
 
     // ----------------------------------------------------------------------
     //   READ MESSAGE
@@ -148,47 +148,48 @@ void Gimbal_Interface::read_messages() {
       case MAVLINK_MSG_ID_HEARTBEAT:
       {
         printf("MAVLINK_MSG_ID_HEARTBEAT. ");
-        mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
-        current_messages.time_stamps.heartbeat = get_time_usec();
-        this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
+        mavlink_msg_heartbeat_decode(&message, &(last_message.heartbeat));
+        last_message.time_stamps.heartbeat = get_time_usec();
+        this_timestamps.heartbeat = last_message.time_stamps.heartbeat;
 
         // If this is the first time we have detected the heartbeat, store the system and component IDs.
-        if(has_detected == false) {
-          current_messages.sysid = message.sysid;
-          current_messages.compid = message.compid;
+        if(heartbeat_detected == false) {
+          last_message.sysid = message.sysid;
+          last_message.compid = message.compid;
           printf("First heartbeat detected. System ID = %d. Component ID = %d. ", message.sysid, message.compid);
-          has_detected = true;
+          heartbeat_detected = true;
         }
 
         // Get time
-        _last_report_msg_us = get_time_usec();
+        time_of_last_heartbeart_us = get_time_usec();
 
         // Get channel status
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.heartbeat = chan_status->current_rx_seq;
 
-        printf("time (us) = %d\n", _last_report_msg_us);
+        printf("time (us) = %d\n", time_of_last_heartbeart_us);
         break;
       }
 
       case MAVLINK_MSG_ID_SYS_STATUS:
       {
-        printf("MAVLINK_MSG_ID_SYS_STATUS\n");
-        mavlink_msg_sys_status_decode(&message, &(current_messages.sys_status));
-        current_messages.time_stamps.sys_status = get_time_usec();
-        this_timestamps.sys_status = current_messages.time_stamps.sys_status;
+        mavlink_msg_sys_status_decode(&message, &(last_message.sys_status));
+        last_message.time_stamps.sys_status = get_time_usec();
+        this_timestamps.sys_status = last_message.time_stamps.sys_status;
 
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.sys_status = chan_status->current_rx_seq;
+
+        printf("MAVLINK_MSG_ID_SYS_STATUS\n");
         break;
       }
 
       case MAVLINK_MSG_ID_MOUNT_STATUS:
       {
         printf("MAVLINK_MSG_ID_MOUNT_STATUS\n");
-        mavlink_msg_mount_status_decode(&message, &(current_messages.mount_status));
-        current_messages.time_stamps.mount_status = get_time_usec();
-        this_timestamps.mount_status = current_messages.time_stamps.mount_status;
+        mavlink_msg_mount_status_decode(&message, &(last_message.mount_status));
+        last_message.time_stamps.mount_status = get_time_usec();
+        this_timestamps.mount_status = last_message.time_stamps.mount_status;
 
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.mount_status = chan_status->current_rx_seq;
@@ -198,9 +199,9 @@ void Gimbal_Interface::read_messages() {
       case MAVLINK_MSG_ID_MOUNT_ORIENTATION:
       {
         printf("MAVLINK_MSG_ID_MOUNT_ORIENTATION\n");
-        mavlink_msg_mount_orientation_decode(&message, &(current_messages.mount_orientation));
-        current_messages.time_stamps.mount_orientation = get_time_usec();
-        this_timestamps.mount_orientation = current_messages.time_stamps.mount_orientation;
+        mavlink_msg_mount_orientation_decode(&message, &(last_message.mount_orientation));
+        last_message.time_stamps.mount_orientation = get_time_usec();
+        this_timestamps.mount_orientation = last_message.time_stamps.mount_orientation;
 
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.mount_orientation = chan_status->current_rx_seq;
@@ -210,9 +211,9 @@ void Gimbal_Interface::read_messages() {
       case MAVLINK_MSG_ID_RAW_IMU:
       {
         printf("MAVLINK_MSG_ID_RAW_IMU\n");
-        mavlink_msg_raw_imu_decode(&message, &(current_messages.raw_imu));
-        current_messages.time_stamps.raw_imu = get_time_usec();
-        this_timestamps.raw_imu = current_messages.time_stamps.raw_imu;
+        mavlink_msg_raw_imu_decode(&message, &(last_message.raw_imu));
+        last_message.time_stamps.raw_imu = get_time_usec();
+        this_timestamps.raw_imu = last_message.time_stamps.raw_imu;
 
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.raw_imu = chan_status->current_rx_seq;
@@ -227,15 +228,15 @@ void Gimbal_Interface::read_messages() {
 
         printf("MAVLINK_MSG_ID_COMMAND_ACK. command = %d, progress = %d, result = %d\n", packet.command, packet.progress, packet.result);
 
-        current_messages.time_stamps.command_ack = get_time_usec();
-        this_timestamps.command_ack = current_messages.time_stamps.command_ack;
+        last_message.time_stamps.command_ack = get_time_usec();
+        this_timestamps.command_ack = last_message.time_stamps.command_ack;
 
         // Decode packet and set callback
         if(packet.command == MAV_CMD_DO_MOUNT_CONFIGURE) {
-          current_messages.result_cmd_ack_msg_configure = packet.result;
+          last_message.result_cmd_ack_msg_configure = packet.result;
         }
         else if(packet.command == MAV_CMD_DO_MOUNT_CONTROL) {
-          current_messages.result_cmd_ack_msg_control = packet.result;
+          last_message.result_cmd_ack_msg_control = packet.result;
         }
 
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
@@ -487,14 +488,14 @@ void Gimbal_Interface::param_update() {
 // ------------------------------------------------------------------------------
 void Gimbal_Interface::param_process(void) {
 
-  if(!get_connection()) { _state = GIMBAL_STATE_NOT_PRESENT; }
+  if(!get_connection()) { gimbal_state = GIMBAL_STATE_NOT_PRESENT; }
 
-  switch(_state) {
+  switch(gimbal_state) {
 
     case GIMBAL_STATE_NOT_PRESENT: // gimbal was just connected or we just rebooted    
       printf("GIMBAL_STATE_NOT_PRESENT\n");
       reset_params();
-      _state = GIMBAL_STATE_PRESENT_INITIALIZING;
+      gimbal_state = GIMBAL_STATE_PRESENT_INITIALIZING;
       break;
 
     case GIMBAL_STATE_PRESENT_INITIALIZING:
@@ -504,18 +505,18 @@ void Gimbal_Interface::param_process(void) {
         for(uint8_t i = 0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
           printf("Check [%s] %d \n", _params_list[i].gmb_id, _params_list[i].value);
         }
-        _state = GIMBAL_STATE_PRESENT_ALIGNING;
+        gimbal_state = GIMBAL_STATE_PRESENT_ALIGNING;
       }
       break;
 
     case GIMBAL_STATE_PRESENT_ALIGNING:
       printf("GIMBAL_STATE_PRESENT_ALIGNING\n");
       param_update();
-      if(current_messages.sys_status.errors_count2 == 0x00) {
-        _state = GIMBAL_STATE_PRESENT_RUNNING;
+      if(last_message.sys_status.errors_count2 == 0x00) {
+        gimbal_state = GIMBAL_STATE_PRESENT_RUNNING;
         printf("GIMBAL_STATE_PRESENT_RUNNING \n");
       } else {
-        printf("Error: %d\n", current_messages.sys_status.errors_count2);
+        printf("Error: %d\n", last_message.sys_status.errors_count2);
       }
       break;
 
@@ -1048,11 +1049,11 @@ config_mavlink_message_t Gimbal_Interface::get_gimbal_config_mavlink_msg(void) {
 gimbal_status_t Gimbal_Interface::get_gimbal_status(void) {
 
   /* Check gimbal status has changed*/
-  if(current_messages.time_stamps.sys_status) {
+  if(last_message.time_stamps.sys_status) {
 
     // Get gimbal status 
-    uint16_t errors_count1 = current_messages.sys_status.errors_count1;
-    uint16_t errors_count2 = current_messages.sys_status.errors_count2;
+    uint16_t errors_count1 = last_message.sys_status.errors_count1;
+    uint16_t errors_count2 = last_message.sys_status.errors_count2;
 
     /* Check gimbal's motor */
     if(errors_count1 & STATUS1_MOTORS) {
@@ -1100,21 +1101,21 @@ gimbal_status_t Gimbal_Interface::get_gimbal_status(void) {
 
 
 mavlink_raw_imu_t Gimbal_Interface::get_gimbal_raw_imu(void) {
-  if(current_messages.time_stamps.raw_imu) { return current_messages.raw_imu; }
+  if(last_message.time_stamps.raw_imu) { return last_message.raw_imu; }
 }
 
 mavlink_mount_orientation_t Gimbal_Interface::get_gimbal_mount_orientation(void) {
-  if(current_messages.time_stamps.mount_orientation) { return current_messages.mount_orientation; }
+  if(last_message.time_stamps.mount_orientation) { return last_message.mount_orientation; }
 }
 
 mavlink_mount_status_t Gimbal_Interface::get_gimbal_mount_status(void) {
-  if(current_messages.time_stamps.mount_status) { return current_messages.mount_status; }
+  if(last_message.time_stamps.mount_status) { return last_message.mount_status; }
 }
 
-Time_Stamps Gimbal_Interface::get_gimbal_time_stamps(void) { return current_messages.time_stamps; }
+Time_Stamps Gimbal_Interface::get_gimbal_time_stamps(void) { return last_message.time_stamps; }
 
 // Returns the sequence number of the last packet received.
-Sequence_Numbers Gimbal_Interface::get_gimbal_seq_num(void) { return current_messages.current_seq_rx; }
+Sequence_Numbers Gimbal_Interface::get_gimbal_seq_num(void) { return last_message.current_seq_rx; }
 
 /**
  * @brief  This function get gimbal the command ack of MAV_CMD_DO_MOUNT_CONFIGURE
@@ -1122,8 +1123,8 @@ Sequence_Numbers Gimbal_Interface::get_gimbal_seq_num(void) { return current_mes
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
-  if(current_messages.time_stamps.command_ack) { // new ack received?
-    return current_messages.result_cmd_ack_msg_configure;
+  if(last_message.time_stamps.command_ack) { // new ack received?
+    return last_message.result_cmd_ack_msg_configure;
   }
 }
 
@@ -1133,8 +1134,8 @@ uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_control(void) {
-  if(current_messages.time_stamps.command_ack) { // new ack received?
-    return current_messages.result_cmd_ack_msg_control;
+  if(last_message.time_stamps.command_ack) { // new ack received?
+    return last_message.result_cmd_ack_msg_control;
   }
 }
 
@@ -1177,8 +1178,8 @@ void Gimbal_Interface::start() {
 
   // Check for messages...
   do {
-    if(time_to_exit) {
-      printf("CHECK FOR MESSAGES sysid: %d compid: %d\n", current_messages.sysid, current_messages.compid);
+    if(exit_signalled) {
+      printf("CHECK FOR MESSAGES sysid: %d compid: %d\n", last_message.sysid, last_message.compid);
       return;
     }
     usleep(500000); // Check at 2Hz
@@ -1196,13 +1197,13 @@ void Gimbal_Interface::start() {
 
   // System ID
   if(not system_id) {
-    system_id = current_messages.sysid;
+    system_id = last_message.sysid;
     printf("GOT GIMBAL SYSTEM ID: %i\n", system_id);
   }
 
   // Component ID
   if(not gimbal_id) {
-    gimbal_id = current_messages.compid;
+    gimbal_id = last_message.compid;
     printf("GOT GIMBAL COMPONENT ID: %i\n\n", gimbal_id);
   }
 
@@ -1226,7 +1227,7 @@ void Gimbal_Interface::start() {
 void Gimbal_Interface::stop() {
 
   printf("CLOSE THREADS\n");
-  time_to_exit = true; // signal exit
+  exit_signalled = true; // signal exit
 
   // wait for exit
   pthread_join(read_tid, NULL);
@@ -1275,15 +1276,15 @@ void Gimbal_Interface::handle_quit(int sig) {
   }
 }
 
-bool Gimbal_Interface::get_flag_exit(void) { return time_to_exit; }
+bool Gimbal_Interface::get_flag_exit(void) { return exit_signalled; }
 
 
 bool Gimbal_Interface::get_connection(void) {
 
-  uint32_t timeout = get_time_usec() - _last_report_msg_us;
+  uint32_t timeout = get_time_usec() - time_of_last_heartbeart_us;
 
   // Check heartbeat from gimbal
-  if(!has_detected && timeout > _time_lost_connection) {
+  if(!heartbeat_detected && timeout > _time_lost_connection) {
     printf(" Lost Connection!\n");
     return false;
   }
@@ -1293,22 +1294,22 @@ bool Gimbal_Interface::get_connection(void) {
 
 bool Gimbal_Interface::present() {
 
-  uint32_t timeout = get_time_usec() - _last_report_msg_us;
+  uint32_t timeout = get_time_usec() - time_of_last_heartbeart_us;
 
-  if(_state != GIMBAL_STATE_NOT_PRESENT && timeout > _time_lost_connection) { // check time out
+  if(gimbal_state != GIMBAL_STATE_NOT_PRESENT && timeout > _time_lost_connection) { // check time out
     printf(" Not Present!\n");
-    _state = GIMBAL_STATE_NOT_PRESENT;
+    gimbal_state = GIMBAL_STATE_NOT_PRESENT;
     return false;
   }
 
-  return (_state != GIMBAL_STATE_NOT_PRESENT) && (_state == GIMBAL_STATE_PRESENT_RUNNING);
+  return (gimbal_state != GIMBAL_STATE_NOT_PRESENT) && (gimbal_state == GIMBAL_STATE_PRESENT_RUNNING);
 }
 
 void Gimbal_Interface::read_thread() {
 
   reading_status = true;
 
-  while(!time_to_exit) {
+  while(!exit_signalled) {
     read_messages();
     usleep(10000); // Read batches at 10Hz
   }

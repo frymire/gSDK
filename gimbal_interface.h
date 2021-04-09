@@ -325,7 +325,7 @@ enum param_index_t {
  * Gimbal Interface Class
  *
  * This starts two threads for read and write over MAVlink. The read thread
- * listens for any MAVlink message and pushes it to the current_messages
+ * listens for any MAVlink message and pushes it to the last_message
  * attribute.  The write thread at the moment only streams a heartbeat 1hz
  */
 class Gimbal_Interface {
@@ -554,9 +554,9 @@ private:
 
   Serial_Port* serial_port;
 
-  bool time_to_exit;
-  bool has_detected; // really, "heartbeat_detected"
-  uint32_t _last_report_msg_us; // time heartbeat was last detected
+  bool exit_signalled;
+  bool heartbeat_detected;
+  uint32_t time_of_last_heartbeart_us;
 
   pthread_t read_tid;
   pthread_t write_tid;
@@ -567,18 +567,16 @@ private:
   //void write_setpoint();
   void write_heartbeat(void);
 
-  Mavlink_Messages current_messages; // really, most recent message
+  Mavlink_Messages last_message;
 
   gimbal_status_t gimbal_status;
-
-  gimbal_state_t _state;
+  gimbal_state_t gimbal_state;
 
   constexpr static const char* alpha = "ALPHA";
   constexpr static const char* beta = "BETA";
   constexpr static const char* preview = "PREVIEW";
   constexpr static const char* official = "OFFICIAL";
 
-  //Gimbal params
   void reset_params();
   bool params_initialized();
   bool params_received_all();

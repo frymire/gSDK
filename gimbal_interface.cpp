@@ -167,7 +167,6 @@ void Gimbal_Interface::read_messages() {
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.heartbeat = chan_status->current_rx_seq;
 
-        printf("")
         break;
       }
 

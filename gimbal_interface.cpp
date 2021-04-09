@@ -198,12 +198,12 @@ void Gimbal_Interface::read_messages() {
         mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.mount_status = channel_status->current_rx_seq;
 
-        printf(
-          "MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
-          last_message.mount_status.pointing_c,
-          last_message.mount_status.pointing_a,
-          last_message.mount_status.pointing_b
-        );
+        //printf(
+        //  "MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
+        //  last_message.mount_status.pointing_c,
+        //  last_message.mount_status.pointing_a,
+        //  last_message.mount_status.pointing_b
+        //);
         break;
       }
 
@@ -236,16 +236,16 @@ void Gimbal_Interface::read_messages() {
         this_seq_num.raw_imu = chan_status->current_rx_seq;
 
         printf(
-          "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // mag-xyz: [%d, %d, %d]
+          "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d], mag-xyz: [%d, %d, %d]\n", // 
           last_message.raw_imu.xacc,
           last_message.raw_imu.yacc,
           last_message.raw_imu.zacc,
-          //last_message.raw_imu.xmag,
-          //last_message.raw_imu.ymag,
-          //last_message.raw_imu.zmag,
           last_message.raw_imu.xgyro,
           last_message.raw_imu.ygyro,
-          last_message.raw_imu.zgyro
+          last_message.raw_imu.zgyro,
+          last_message.raw_imu.xmag,
+          last_message.raw_imu.ymag,
+          last_message.raw_imu.zmag
         );
 
         break;

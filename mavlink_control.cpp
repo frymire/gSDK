@@ -355,7 +355,7 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
   //printf("YPR: [%2.3f, %2.3f, %2.3f]\n", mount.yaw, mount.pitch, mount.roll);
   
   // "Move" the gimbal in CTRL_ANGULAR_RATE mode to set the rate.
-  gimbal.set_gimbal_move(0.4f, 0.4f, 0.4f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
+  gimbal.set_gimbal_move(4.0f, 4.0f, 4.0f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
   usleep(5*1000000);
 
   SetLockMode(gimbal); // go back to an actual pointing mode

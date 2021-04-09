@@ -247,15 +247,15 @@ void ConfigureGimbalAxes(Gimbal_Interface &gimbal) {
   config = {DIR_CCW, 50, 50, 65, 50, 0};
   gimbal.set_gimbal_config_tilt_axis(config);
   
-  config = {DIR_CW, 50, 60, 0, 0, 0};
+  //config = {DIR_CW, 50, 60, 0, 0, 0}; // TODO: uncomment this.
   gimbal.set_gimbal_config_roll_axis(config);
   
-  config = {DIR_CW, 50, 70, 87, 50, 0};
+  config = {DIR_CW, 50, 70, 87, 50, 50}; // {DIR_CW, 50, 70, 87, 50, 0};
   gimbal.set_gimbal_config_pan_axis(config);
   
   gimbal_motor_control_t tilt = {80, 40}; // stiffness, hold strength
   gimbal_motor_control_t roll = {90, 40};
-  gimbal_motor_control_t pan = {95, 40}; // 100, 40
+  gimbal_motor_control_t pan = {100, 40}; // 100, 40
   gimbal.set_gimbal_motor_control(tilt, roll, pan, 2, 3, 120);
   
   usleep(1000000);

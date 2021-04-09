@@ -251,7 +251,7 @@ void Gimbal_Interface::read_messages() {
         mavlink_msg_param_value_decode(&message, &packet);
 
         printf(
-          "MAVLINK_MSG_ID_PARAM_VALUE. ID = %d, index = %d, type = %d, value = %d\n",
+          "MAVLINK_MSG_ID_PARAM_VALUE. ID = %s, index = %d, type = %d, value = %f\n",
           packet.param_id,
           packet.param_index,
           packet.param_type,
@@ -274,7 +274,7 @@ void Gimbal_Interface::read_messages() {
 
               case PARAM_STATE_NOT_YET_READ:
                 printf("PARAM_STATE_NOT_YET_READ. i = %d\n", i);
-                exit(-1);
+                //exit(-1);
                 break;
 
               case PARAM_STATE_FETCH_AGAIN:

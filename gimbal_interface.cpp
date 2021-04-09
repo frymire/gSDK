@@ -270,15 +270,15 @@ void Gimbal_Interface::read_messages() {
               case PARAM_STATE_NONEXISTANT:
                 printf("Got parameter (PARAM_STATE_NONEXISTANT, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
                 //exit(-1);
-                break;
+                //break;
 
               case PARAM_STATE_NOT_YET_READ:
                 printf("Got parameter (PARAM_STATE_NOT_YET_READ, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
                 //exit(-1);
-                break;
+                //break;
 
               case PARAM_STATE_FETCH_AGAIN:
-                _params_list[i].value = packet.param_value;
+                _params_list[i].value = packet.param_value; // added this
                 _params_list[i].state = PARAM_STATE_CONSISTENT;
                 printf("Got parameter (fetch again) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
                 break;

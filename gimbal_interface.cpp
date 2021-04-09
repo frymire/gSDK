@@ -124,7 +124,7 @@ Gimbal_Interface::~Gimbal_Interface() {}
 void Gimbal_Interface::read_messages() {
 
   bool success; // receive success flag
-  Time_Stamps this_timestamps;
+  //Time_Stamps this_timestamps;
   Sequence_Numbers this_seq_num;
   bool received_all = false;  // receive only one message
 
@@ -133,13 +133,12 @@ void Gimbal_Interface::read_messages() {
   // Blocking wait for new data
   while(!exit_signalled) {
 
-    // ----------------------------------------------------------------------
-    //   READ MESSAGE
-    // ----------------------------------------------------------------------
     mavlink_message_t message;
     success = serial_port->read_message(message);
 
     if(success && (message.seq != last_message_seq)) {
+
+      last_message_seq = message.seq;
 
       //printf(
       //  "Message: ID = %d, seq = %d, length = %d\n",
@@ -148,223 +147,213 @@ void Gimbal_Interface::read_messages() {
       //  message.len
       //);
 
-      last_message_seq = message.seq;
-    //}
-
-
-    // ----------------------------------------------------------------------
-    //   HANDLE MESSAGE
-    // ----------------------------------------------------------------------
-    //if (success) {
-
-      // Handle Message ID
       switch(message.msgid) {
 
-      case MAVLINK_MSG_ID_HEARTBEAT:
-      {
-        printf("MAVLINK_MSG_ID_HEARTBEAT. seq = % ", message.seq);
-        mavlink_msg_heartbeat_decode(&message, &(last_message.heartbeat));
-        last_message.time_stamps.heartbeat = get_time_usec();
-        this_timestamps.heartbeat = last_message.time_stamps.heartbeat;
+        case MAVLINK_MSG_ID_HEARTBEAT:
+        {
+          printf("MAVLINK_MSG_ID_HEARTBEAT. seq = % ", message.seq);
+          mavlink_msg_heartbeat_decode(&message, &(last_message.heartbeat));
+          last_message.time_stamps.heartbeat = get_time_usec();
+          //this_timestamps.heartbeat = last_message.time_stamps.heartbeat;
 
-        // If this is the first time we have detected the heartbeat, store the system and component IDs.
-        if(heartbeat_detected == false) {
-          last_message.sysid = message.sysid;
-          last_message.compid = message.compid;
-          printf("First heartbeat detected. System ID = %d. Component ID = %d. ", message.sysid, message.compid);
-          heartbeat_detected = true;
+          // If this is the first time we have detected the heartbeat, store the system and component IDs.
+          if(heartbeat_detected == false) {
+            last_message.sysid = message.sysid;
+            last_message.compid = message.compid;
+            printf("First heartbeat detected. System ID = %d. Component ID = %d. ", message.sysid, message.compid);
+            heartbeat_detected = true;
+          }
+
+          // Get time
+          time_of_last_heartbeart_us = get_time_usec();
+
+          // Get channel status
+          mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+          this_seq_num.heartbeat = chan_status->current_rx_seq;
+
+          printf("time (us) = %d\n", time_of_last_heartbeart_us);
+          break;
         }
 
-        // Get time
-        time_of_last_heartbeart_us = get_time_usec();
+        case MAVLINK_MSG_ID_SYS_STATUS:
+        {
+          mavlink_msg_sys_status_decode(&message, &(last_message.sys_status));
+          last_message.time_stamps.sys_status = get_time_usec();
+          //this_timestamps.sys_status = last_message.time_stamps.sys_status;
 
-        // Get channel status
-        mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.heartbeat = chan_status->current_rx_seq;
+          mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+          this_seq_num.sys_status = channel_status->current_rx_seq;
 
-        printf("time (us) = %d\n", time_of_last_heartbeart_us);
-        break;
-      }
-
-      case MAVLINK_MSG_ID_SYS_STATUS:
-      {
-        mavlink_msg_sys_status_decode(&message, &(last_message.sys_status));
-        last_message.time_stamps.sys_status = get_time_usec();
-        this_timestamps.sys_status = last_message.time_stamps.sys_status;
-
-        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.sys_status = channel_status->current_rx_seq;
-
-        //printf(
-        //  "MAVLINK_MSG_ID_SYS_STATUS. control_sensors_enabled = %d, control_sensors_health = %d, control_sensors_present = %d\n",
-        //  last_message.sys_status.onboard_control_sensors_enabled,
-        //  last_message.sys_status.onboard_control_sensors_health,
-        //  last_message.sys_status.onboard_control_sensors_present
-        //);
-        break;
-      }
-
-      case MAVLINK_MSG_ID_MOUNT_STATUS:
-      {
-        mavlink_msg_mount_status_decode(&message, &(last_message.mount_status));
-        last_message.time_stamps.mount_status = get_time_usec();
-        this_timestamps.mount_status = last_message.time_stamps.mount_status;
-
-        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.mount_status = channel_status->current_rx_seq;
-
-        //printf(
-        //  "MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
-        //  last_message.mount_status.pointing_c,
-        //  last_message.mount_status.pointing_a,
-        //  last_message.mount_status.pointing_b
-        //);
-        break;
-      }
-
-      case MAVLINK_MSG_ID_MOUNT_ORIENTATION:
-      {
-        mavlink_msg_mount_orientation_decode(&message, &(last_message.mount_orientation));
-        last_message.time_stamps.mount_orientation = get_time_usec();
-        this_timestamps.mount_orientation = last_message.time_stamps.mount_orientation;
-
-        mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.mount_orientation = chan_status->current_rx_seq;
-
-        //printf(
-        //  "MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
-        //  last_message.mount_orientation.yaw,
-        //  last_message.mount_orientation.pitch,
-        //  last_message.mount_orientation.roll,
-        //  last_message.mount_orientation.yaw_absolute
-        //);
-        break;
-      }
-
-      case MAVLINK_MSG_ID_RAW_IMU:
-      {
-        mavlink_msg_raw_imu_decode(&message, &(last_message.raw_imu));
-        last_message.time_stamps.raw_imu = get_time_usec();
-        this_timestamps.raw_imu = last_message.time_stamps.raw_imu;
-
-        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.raw_imu = channel_status->current_rx_seq;
-
-        //printf(
-        //  "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // , mag-xyz: [%d, %d, %d]
-        //  last_message.raw_imu.xacc,
-        //  last_message.raw_imu.yacc,
-        //  last_message.raw_imu.zacc,
-        //  last_message.raw_imu.xgyro,
-        //  last_message.raw_imu.ygyro,
-        //  last_message.raw_imu.zgyro,
-        //  //last_message.raw_imu.xmag,
-        //  //last_message.raw_imu.ymag,
-        //  //last_message.raw_imu.zmag
-        //);
-
-        break;
-      }
-
-      case MAVLINK_MSG_ID_COMMAND_ACK:
-      {
-        mavlink_command_ack_t packet;
-        mavlink_msg_command_ack_decode(&message, &packet);
-
-        last_message.time_stamps.command_ack = get_time_usec();
-        this_timestamps.command_ack = last_message.time_stamps.command_ack;
-
-        // Decode packet and set callback
-        if(packet.command == MAV_CMD_DO_MOUNT_CONFIGURE) {
-          last_message.result_cmd_ack_msg_configure = packet.progress; // TODO: Experimenting here!
-          //last_message.result_cmd_ack_msg_configure = packet.result;
-        } else if(packet.command == MAV_CMD_DO_MOUNT_CONTROL) {
-          last_message.result_cmd_ack_msg_control = packet.progress; // TODO: Experimenting here!
-          //last_message.result_cmd_ack_msg_control = packet.result;
+          //printf(
+          //  "MAVLINK_MSG_ID_SYS_STATUS. control_sensors_enabled = %d, control_sensors_health = %d, control_sensors_present = %d\n",
+          //  last_message.sys_status.onboard_control_sensors_enabled,
+          //  last_message.sys_status.onboard_control_sensors_health,
+          //  last_message.sys_status.onboard_control_sensors_present
+          //);
+          break;
         }
 
-        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.command_ack = channel_status->current_rx_seq;
+        case MAVLINK_MSG_ID_MOUNT_STATUS:
+        {
+          mavlink_msg_mount_status_decode(&message, &(last_message.mount_status));
+          last_message.time_stamps.mount_status = get_time_usec();
+          //this_timestamps.mount_status = last_message.time_stamps.mount_status;
 
-        printf(
-          "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d, result_param2 = %d\n",
-          message.seq,
-          packet.command,
-          packet.progress,
-          packet.result,
-          packet.result_param2
-        );
+          mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+          this_seq_num.mount_status = channel_status->current_rx_seq;
 
-        break;
-      }
+          //printf(
+          //  "MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
+          //  last_message.mount_status.pointing_c,
+          //  last_message.mount_status.pointing_a,
+          //  last_message.mount_status.pointing_b
+          //);
+          break;
+        }
 
-      case MAVLINK_MSG_ID_PARAM_VALUE:
-      {
+        case MAVLINK_MSG_ID_MOUNT_ORIENTATION:
+        {
+          mavlink_msg_mount_orientation_decode(&message, &(last_message.mount_orientation));
+          last_message.time_stamps.mount_orientation = get_time_usec();
+          //this_timestamps.mount_orientation = last_message.time_stamps.mount_orientation;
 
-        mavlink_param_value_t packet;
-        mavlink_msg_param_value_decode(&message, &packet);
+          mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+          this_seq_num.mount_orientation = chan_status->current_rx_seq;
 
-        printf(
-          "MAVLINK_MSG_ID_PARAM_VALUE. seq = %d, ID = %s, index = %d, type = %d, value = %f\n",
-          message.seq,
-          packet.param_id,
-          packet.param_index,
-          packet.param_type,
-          packet.param_value
-        );
+          //printf(
+          //  "MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
+          //  last_message.mount_orientation.yaw,
+          //  last_message.mount_orientation.pitch,
+          //  last_message.mount_orientation.roll,
+          //  last_message.mount_orientation.yaw_absolute
+          //);
+          break;
+        }
 
-        for(uint8_t i = 0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
+        case MAVLINK_MSG_ID_RAW_IMU:
+        {
+          mavlink_msg_raw_imu_decode(&message, &(last_message.raw_imu));
+          last_message.time_stamps.raw_imu = get_time_usec();
+          //this_timestamps.raw_imu = last_message.time_stamps.raw_imu;
 
-          // Compare the index from gimbal with the param list 
-          if(packet.param_index == _params_list[i].gmb_idx) {
+          mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+          this_seq_num.raw_imu = channel_status->current_rx_seq;
 
-            _params_list[i].seen = true;
+          //printf(
+          //  "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // , mag-xyz: [%d, %d, %d]
+          //  last_message.raw_imu.xacc,
+          //  last_message.raw_imu.yacc,
+          //  last_message.raw_imu.zacc,
+          //  last_message.raw_imu.xgyro,
+          //  last_message.raw_imu.ygyro,
+          //  last_message.raw_imu.zgyro,
+          //  //last_message.raw_imu.xmag,
+          //  //last_message.raw_imu.ymag,
+          //  //last_message.raw_imu.zmag
+          //);
 
-            switch(_params_list[i].state) {
+          break;
+        }
 
-              case PARAM_STATE_NONEXISTANT:
-                printf("Got parameter (PARAM_STATE_NONEXISTANT, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
-                //exit(-1);
-                //break;
+        case MAVLINK_MSG_ID_COMMAND_ACK:
+        {
+          mavlink_command_ack_t packet;
+          mavlink_msg_command_ack_decode(&message, &packet);
 
-              case PARAM_STATE_NOT_YET_READ:
-                printf("Got parameter (PARAM_STATE_NOT_YET_READ, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
-                //exit(-1);
-                //break;
+          last_message.time_stamps.command_ack = get_time_usec();
+          //this_timestamps.command_ack = last_message.time_stamps.command_ack;
 
-              case PARAM_STATE_FETCH_AGAIN:
-                _params_list[i].value = packet.param_value; // added this
-                _params_list[i].state = PARAM_STATE_CONSISTENT;
-                printf("Got parameter (fetch again) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
-                break;
+          // Decode packet and set callback
+          if(packet.command == MAV_CMD_DO_MOUNT_CONFIGURE) {
+            last_message.result_cmd_ack_msg_configure = packet.progress; // TODO: Experimenting here!
+            //last_message.result_cmd_ack_msg_configure = packet.result;
+          } else if(packet.command == MAV_CMD_DO_MOUNT_CONTROL) {
+            last_message.result_cmd_ack_msg_control = packet.progress; // TODO: Experimenting here!
+            //last_message.result_cmd_ack_msg_control = packet.result;
+          }
 
-              case PARAM_STATE_CONSISTENT:
-                _params_list[i].value = (int16_t) packet.param_value;
-                printf("Got parameter (consistent) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
-                break;
+          mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+          this_seq_num.command_ack = channel_status->current_rx_seq;
 
-              case PARAM_STATE_ATTEMPTING_TO_SET:
-                if(packet.param_value == _params_list[i].value) {
-                  printf("Successfully set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+          printf(
+            "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d, result_param2 = %d\n",
+            message.seq,
+            packet.command,
+            packet.progress,
+            packet.result,
+            packet.result_param2
+          );
+
+          break;
+        }
+
+        case MAVLINK_MSG_ID_PARAM_VALUE:
+        {
+
+          mavlink_param_value_t packet;
+          mavlink_msg_param_value_decode(&message, &packet);
+
+          printf(
+            "MAVLINK_MSG_ID_PARAM_VALUE. seq = %d, ID = %s, index = %d, type = %d, value = %f\n",
+            message.seq,
+            packet.param_id,
+            packet.param_index,
+            packet.param_type,
+            packet.param_value
+          );
+
+          for(uint8_t i = 0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
+
+            // Compare the index from gimbal with the param list 
+            if(packet.param_index == _params_list[i].gmb_idx) {
+
+              _params_list[i].seen = true;
+
+              switch(_params_list[i].state) {
+
+                case PARAM_STATE_NONEXISTANT:
+                  printf("Got parameter (PARAM_STATE_NONEXISTANT, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
+                  //exit(-1);
+                  //break;
+
+                case PARAM_STATE_NOT_YET_READ:
+                  printf("Got parameter (PARAM_STATE_NOT_YET_READ, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
+                  //exit(-1);
+                  //break;
+
+                case PARAM_STATE_FETCH_AGAIN:
+                  _params_list[i].value = packet.param_value; // added this
                   _params_list[i].state = PARAM_STATE_CONSISTENT;
-                } else {
-                  printf("Still attempting to set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);                  
-                }
-                break;
+                  printf("Got parameter (fetch again) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+                  break;
 
-            } // switch _params_list[i].state
+                case PARAM_STATE_CONSISTENT:
+                  _params_list[i].value = (int16_t) packet.param_value;
+                  printf("Got parameter (consistent) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+                  break;
 
-          } // if
-        } // for
+                case PARAM_STATE_ATTEMPTING_TO_SET:
+                  if(packet.param_value == _params_list[i].value) {
+                    printf("Successfully set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+                    _params_list[i].state = PARAM_STATE_CONSISTENT;
+                  } else {
+                    printf("Still attempting to set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);                  
+                  }
+                  break;
 
-        break;
-      }
+              } // switch _params_list[i].state
 
-      default:
-      {
-        printf("Warning, did not handle message id %i\n", message.msgid);
-        break;
-      }
+            } // if
+          } // for
+
+          break;
+        }
+
+        default:
+        {
+          printf("Warning, did not handle message id %i\n", message.msgid);
+          break;
+        }
 
       } // end: switch msgid
 

@@ -137,6 +137,13 @@ void Gimbal_Interface::read_messages() {
     mavlink_message_t message;
     success = serial_port->read_message(message);
 
+    printf(
+      "Message: ID = %d, seq = %d, length = %d\n",
+      message.msgid,
+      message.seq,
+      message.len
+    );
+
     // ----------------------------------------------------------------------
     //   HANDLE MESSAGE
     // ----------------------------------------------------------------------
@@ -232,46 +239,52 @@ void Gimbal_Interface::read_messages() {
         last_message.time_stamps.raw_imu = get_time_usec();
         this_timestamps.raw_imu = last_message.time_stamps.raw_imu;
 
-        mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.raw_imu = chan_status->current_rx_seq;
+        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+        this_seq_num.raw_imu = channel_status->current_rx_seq;
 
-        printf(
-          "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d], mag-xyz: [%d, %d, %d]\n", // 
-          last_message.raw_imu.xacc,
-          last_message.raw_imu.yacc,
-          last_message.raw_imu.zacc,
-          last_message.raw_imu.xgyro,
-          last_message.raw_imu.ygyro,
-          last_message.raw_imu.zgyro,
-          last_message.raw_imu.xmag,
-          last_message.raw_imu.ymag,
-          last_message.raw_imu.zmag
-        );
+        //printf(
+        //  "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // , mag-xyz: [%d, %d, %d]
+        //  last_message.raw_imu.xacc,
+        //  last_message.raw_imu.yacc,
+        //  last_message.raw_imu.zacc,
+        //  last_message.raw_imu.xgyro,
+        //  last_message.raw_imu.ygyro,
+        //  last_message.raw_imu.zgyro,
+        //  //last_message.raw_imu.xmag,
+        //  //last_message.raw_imu.ymag,
+        //  //last_message.raw_imu.zmag
+        //);
 
         break;
       }
 
       case MAVLINK_MSG_ID_COMMAND_ACK:
       {
-
         mavlink_command_ack_t packet;
         mavlink_msg_command_ack_decode(&message, &packet);
-
-        printf("MAVLINK_MSG_ID_COMMAND_ACK. command = %d, progress = %d, result = %d\n", packet.command, packet.progress, packet.result);
 
         last_message.time_stamps.command_ack = get_time_usec();
         this_timestamps.command_ack = last_message.time_stamps.command_ack;
 
         // Decode packet and set callback
         if(packet.command == MAV_CMD_DO_MOUNT_CONFIGURE) {
-          last_message.result_cmd_ack_msg_configure = packet.result;
-        }
-        else if(packet.command == MAV_CMD_DO_MOUNT_CONTROL) {
-          last_message.result_cmd_ack_msg_control = packet.result;
+          last_message.result_cmd_ack_msg_configure = packet.progress; // TODO: Experimenting here!
+          //last_message.result_cmd_ack_msg_configure = packet.result;
+        } else if(packet.command == MAV_CMD_DO_MOUNT_CONTROL) {
+          last_message.result_cmd_ack_msg_control = packet.progress; // TODO: Experimenting here!
+          //last_message.result_cmd_ack_msg_control = packet.result;
         }
 
-        mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-        this_seq_num.command_ack = chan_status->current_rx_seq;
+        mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+        this_seq_num.command_ack = channel_status->current_rx_seq;
+
+        printf(
+          "MAVLINK_MSG_ID_COMMAND_ACK. command = %d, progress = %d, result = %d, result_param2 = %d\n",
+          packet.command,
+          packet.progress,
+          packet.result,
+          packet.result_param2
+        );
 
         break;
       }

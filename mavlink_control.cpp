@@ -255,7 +255,7 @@ void ConfigureGimbalAxes(Gimbal_Interface &gimbal) {
   
   gimbal_motor_control_t tilt = {80, 40}; // stiffness, hold strength
   gimbal_motor_control_t roll = {90, 40};
-  gimbal_motor_control_t pan = {100, 40};
+  gimbal_motor_control_t pan = {95, 40}; // 100, 40
   gimbal.set_gimbal_motor_control(tilt, roll, pan, 2, 3, 120);
   
   usleep(1000000);

@@ -141,12 +141,12 @@ void Gimbal_Interface::read_messages() {
 
     if(success && (message.seq != last_message_seq)) {
 
-      printf(
-        "Message: ID = %d, seq = %d, length = %d\n",
-        message.msgid,
-        message.seq,
-        message.len
-      );
+      //printf(
+      //  "Message: ID = %d, seq = %d, length = %d\n",
+      //  message.msgid,
+      //  message.seq,
+      //  message.len
+      //);
 
       last_message_seq = message.seq;
     //}

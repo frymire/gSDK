@@ -99,20 +99,19 @@ int main(int argc, char** argv) {
       usleep(1000000);
     } 
 
-
-    printf("Rebooting gimbal.\n");
-    gimbal.set_gimbal_reboot();
-
-    //CheckFirmwareVersion(gimbal);
+    CheckFirmwareVersion(gimbal);
     //SetMessageRates(gimbal);
     //TurnOff(gimbal);
     //TurnOn(gimbal);
-    //ConfigureGimbalAxes(gimbal);
+    ConfigureGimbalAxes(gimbal);
     SetLockMode(gimbal);
     Point(gimbal, 80.0f, 25.0f, -45.0f);
     SetGimbalSpeed(gimbal);
     Point(gimbal, -45.0f, -10.0f, 30.0f);
     PointHome(gimbal);
+
+    //printf("Rebooting gimbal.\n");
+    //gimbal.set_gimbal_reboot();
 
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {
@@ -176,13 +175,11 @@ void HandleQuitSignal(int sig) {
 
   try {
     gimbal_interface_quit->handle_quit(sig); // autopilot interface
-  }
-  catch (int error) {}
+  } catch (int error) {}
 
   try {
     serial_port_quit->handle_quit(sig); // serial port
-  }
-  catch (int error) {}
+  } catch (int error) {}
 
   exit(0);
 }

@@ -122,6 +122,7 @@ Gimbal_Interface::~Gimbal_Interface() {}
 //   Read Messages
 // ------------------------------------------------------------------------------
 void Gimbal_Interface::read_messages() {
+
   bool success;           // receive success flag
   Time_Stamps this_timestamps;
   Sequence_Numbers this_seq_num;
@@ -146,7 +147,7 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_HEARTBEAT:
       {
-        // printf("MAVLINK_MSG_ID_HEARTBEAT\n");
+        printf("MAVLINK_MSG_ID_HEARTBEAT\n");
         mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
         current_messages.time_stamps.heartbeat = get_time_usec();
         this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
@@ -171,7 +172,7 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_SYS_STATUS:
       {
-        // printf("MAVLINK_MSG_ID_SYS_STATUS\n");
+        printf("MAVLINK_MSG_ID_SYS_STATUS\n");
         mavlink_msg_sys_status_decode(&message, &(current_messages.sys_status));
         current_messages.time_stamps.sys_status = get_time_usec();
         this_timestamps.sys_status = current_messages.time_stamps.sys_status;
@@ -183,7 +184,7 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_MOUNT_STATUS:
       {
-        // printf("MAVLINK_MSG_ID_MOUNT_STATUS\n");
+        printf("MAVLINK_MSG_ID_MOUNT_STATUS\n");
         mavlink_msg_mount_status_decode(&message, &(current_messages.mount_status));
         current_messages.time_stamps.mount_status = get_time_usec();
         this_timestamps.mount_status = current_messages.time_stamps.mount_status;
@@ -195,7 +196,7 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_MOUNT_ORIENTATION:
       {
-        // printf("MAVLINK_MSG_ID_MOUNT_ORIENTATION\n");
+        printf("MAVLINK_MSG_ID_MOUNT_ORIENTATION\n");
         mavlink_msg_mount_orientation_decode(&message, &(current_messages.mount_orientation));
         current_messages.time_stamps.mount_orientation = get_time_usec();
         this_timestamps.mount_orientation = current_messages.time_stamps.mount_orientation;
@@ -207,7 +208,7 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_RAW_IMU:
       {
-        // printf("MAVLINK_MSG_ID_RAW_IMU\n");
+        printf("MAVLINK_MSG_ID_RAW_IMU\n");
         mavlink_msg_raw_imu_decode(&message, &(current_messages.raw_imu));
         current_messages.time_stamps.raw_imu = get_time_usec();
         this_timestamps.raw_imu = current_messages.time_stamps.raw_imu;
@@ -219,7 +220,7 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_COMMAND_ACK:
       {
-        // printf("MAVLINK_MSG_ID_COMMAND_ACK\n");
+        printf("MAVLINK_MSG_ID_COMMAND_ACK\n");
         mavlink_command_ack_t packet;
 
         mavlink_msg_command_ack_decode(&message, &packet);
@@ -242,7 +243,7 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_PARAM_VALUE:
       {
-        // printf("MAVLINK_MSG_ID_PARAM_VALUE\n");
+        printf("MAVLINK_MSG_ID_PARAM_VALUE\n");
         mavlink_param_value_t packet;
 
         mavlink_msg_param_value_decode(&message, &packet);
@@ -279,7 +280,7 @@ void Gimbal_Interface::read_messages() {
       };
       default:
       {
-        // printf("Warning, did not handle message id %i\n",message.msgid);
+        printf("Warning, did not handle message id %i\n",message.msgid);
         break;
       }
 
@@ -725,19 +726,25 @@ void Gimbal_Interface::get_gimbal_motor_control(
   int16_t value = 0;
 
   get_param(GMB_PARAM_STIFFNESS_PITCH, value);
-  tilt.stiffness = (uint8_t)value;
+  printf("Pitch stiffness: %d", value);
+  tilt.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_PITCH, value);
-  tilt.holdstrength = (uint8_t)value;
+  printf("Pitch hold strength: %d", value);
+  tilt.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_ROLL, value);
-  roll.stiffness = (uint8_t)value;
+  printf("Roll stiffness: %d", value);
+  roll.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_ROLL, value);
-  roll.holdstrength = (uint8_t)value;
+  printf("Roll hold strength: %d", value); 
+  roll.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_YAW, value);
-  pan.stiffness = (uint8_t)value;
+  printf("Yaw stiffness: %d", value);
+  pan.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_YAW, value);
-  pan.holdstrength = (uint8_t)value;
+  printf("Yaw hold strength: %d", value);
+  pan.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_OUTPUT_FILTER, value);
   output_filter	= (uint8_t)value;

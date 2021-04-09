@@ -138,6 +138,10 @@ void Gimbal_Interface::read_messages() {
 
     if(success && (message.seq != last_message_seq)) {
 
+      if(message.seq != last_message_seq + 1) {
+        printf("Warning: Most recent message seq number is not in order. Some messages probably dropped.\n");
+      }
+
       last_message_seq = message.seq;
 
       //printf(
@@ -657,11 +661,11 @@ void Gimbal_Interface::set_gimbal_mode(control_gimbal_mode_t mode) {
 
   // Prepare command for off-board mode
   mavlink_command_long_t comm ={0};
-  comm.target_system    	= system_id;
-  comm.target_component 	= gimbal_id;
-  comm.command            = MAV_CMD_USER_2;
-  comm.param7             = mode;
-  comm.confirmation     	= false;
+  comm.target_system = system_id;
+  comm.target_component = gimbal_id;
+  comm.command = MAV_CMD_USER_2;
+  comm.param7 = mode;
+  comm.confirmation = false;
 
   mavlink_message_t message;
   mavlink_msg_command_long_encode(system_id, companion_id, &message, &comm);
@@ -687,10 +691,10 @@ void Gimbal_Interface::set_gimbal_axes_mode(
   pan.stabilize = 1;
 
   // Prepare command for off-board mode
-  mavlink_command_long_t comm ={0};
-  comm.target_system    	= system_id;
-  comm.target_component 	= gimbal_id;
-  comm.confirmation     	= false;
+  mavlink_command_long_t comm = {0};
+  comm.target_system = system_id;
+  comm.target_component = gimbal_id;
+  comm.confirmation = false;
   comm.command = MAV_CMD_DO_MOUNT_CONFIGURE;
   comm.param1 = MAV_MOUNT_MODE_MAVLINK_TARGETING;
   comm.param2 = roll.stabilize;
@@ -714,7 +718,7 @@ void Gimbal_Interface::set_gimbal_axes_mode(
 void Gimbal_Interface::set_gimbal_move(float tilt, float roll, float pan) {
 
   // Prepare command for off-board mode
-  mavlink_command_long_t comm ={0};
+  mavlink_command_long_t comm = {0};
   comm.target_system = system_id;
   comm.target_component = gimbal_id;
   comm.command = MAV_CMD_DO_MOUNT_CONTROL;

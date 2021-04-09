@@ -221,8 +221,8 @@ void Gimbal_Interface::read_messages() {
           last_message.time_stamps.mount_orientation = get_time_usec();
           //this_timestamps.mount_orientation = last_message.time_stamps.mount_orientation;
 
-          mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          //this_seq_num.mount_orientation = chan_status->current_rx_seq;
+          mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
+          //this_seq_num.mount_orientation = channel_status->current_rx_seq;
 
           //printf(
           //  "MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
@@ -315,32 +315,32 @@ void Gimbal_Interface::read_messages() {
               switch(_params_list[i].state) {
 
                 case PARAM_STATE_NONEXISTANT:
-                  printf("  Got parameter (PARAM_STATE_NONEXISTANT, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
+                  //printf("  Got parameter (PARAM_STATE_NONEXISTANT, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
                   //exit(-1);
                   //break;
 
                 case PARAM_STATE_NOT_YET_READ:
-                  printf("  Got parameter (PARAM_STATE_NOT_YET_READ, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
+                  //printf("  Got parameter (PARAM_STATE_NOT_YET_READ, i = %d) %s = %d\n", i, get_param_name((param_index_t) i), _params_list[i].value);
                   //exit(-1);
                   //break;
 
                 case PARAM_STATE_FETCH_AGAIN:
                   _params_list[i].value = packet.param_value; // added this
                   _params_list[i].state = PARAM_STATE_CONSISTENT;
-                  printf("  Got parameter (fetch again) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+                  //printf("  Got parameter (fetch again) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
                   break;
 
                 case PARAM_STATE_CONSISTENT:
                   _params_list[i].value = (int16_t) packet.param_value;
-                  printf("  Got parameter (consistent) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+                  //printf("  Got parameter (consistent) %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
                   break;
 
                 case PARAM_STATE_ATTEMPTING_TO_SET:
                   if(packet.param_value == _params_list[i].value) {
-                    printf("  Successfully set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
+                    //printf("  Successfully set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);
                     _params_list[i].state = PARAM_STATE_CONSISTENT;
                   } else {
-                    printf("  Still attempting to set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);                  
+                    //printf("  Still attempting to set parameter %s = %d\n", get_param_name((param_index_t) i), _params_list[i].value);                  
                   }
                   break;
 
@@ -800,34 +800,34 @@ void Gimbal_Interface::get_gimbal_motor_control(
   int16_t value = 0;
 
   get_param(GMB_PARAM_STIFFNESS_PITCH, value);
-  printf("Pitch stiffness = %d, ", value);
+  //printf("Pitch stiffness = %d, ", value);
   tilt.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_PITCH, value);
-  printf("Pitch hold strength = %d, ", value);
+  //printf("Pitch hold strength = %d, ", value);
   tilt.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_ROLL, value);
-  printf("Roll stiffness = %d, ", value);
+  //printf("Roll stiffness = %d, ", value);
   roll.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_ROLL, value);
-  printf("Roll hold strength = %d, ", value); 
+  //printf("Roll hold strength = %d, ", value); 
   roll.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_YAW, value);
-  printf("Yaw stiffness = %d, ", value);
+  //printf("Yaw stiffness = %d, ", value);
   pan.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_YAW, value);
-  printf("Yaw hold strength = %d, ", value);
+  //printf("Yaw hold strength = %d, ", value);
   pan.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_OUTPUT_FILTER, value);
-  printf("Output filter = %d, ", value); 
+  //printf("Output filter = %d, ", value); 
   output_filter	= (uint8_t) value;
   get_param(GMB_PARAM_GYRO_FILTER, value);
-  printf("Gyro filter = %d, ", value);
+  //printf("Gyro filter = %d, ", value);
   gyro_filter = (uint8_t) value;
   get_param(GMB_PARAM_GAIN, value);
-  printf("Gain = %d\n", value);
+  //printf("Gain = %d\n", value);
   gain= (uint8_t) value;
 }
 
@@ -842,19 +842,18 @@ void Gimbal_Interface::get_gimbal_motor_control(
  */
 void Gimbal_Interface::set_gimbal_config_tilt_axis(gimbal_config_axis_t config) {
 
-  set_param(GMB_PARAM_SMOOTH_CONTROL_PITCH, (int16_t)config.smooth_control);
-  set_param(GMB_PARAM_SMOOTH_FOLLOW_PITCH, (int16_t)config.smooth_follow);
-  set_param(GMB_PARAM_WINDOW_FOLLOW_PITCH, (int16_t)config.window_follow);
-  set_param(GMB_PARAM_SPEED_FOLLOW_PITCH, (int16_t)config.speed_follow);
-  set_param(GMB_PARAM_SPEED_CONTROL_PITCH, (int16_t)config.speed_control);
+  set_param(GMB_PARAM_SMOOTH_CONTROL_PITCH, (int16_t) config.smooth_control);
+  set_param(GMB_PARAM_SMOOTH_FOLLOW_PITCH, (int16_t) config.smooth_follow);
+  set_param(GMB_PARAM_WINDOW_FOLLOW_PITCH, (int16_t) config.window_follow);
+  set_param(GMB_PARAM_SPEED_FOLLOW_PITCH, (int16_t) config.speed_follow);
+  set_param(GMB_PARAM_SPEED_CONTROL_PITCH, (int16_t) config.speed_control);
 
   int16_t get_dir;
   get_param(GMB_PARAM_AXIS_DIR, get_dir);
 
   if(config.dir == DIR_CCW) {
     get_dir = get_dir | 0x01;
-  }
-  else {
+  } else {
     get_dir &= (~0x01);
   }
 
@@ -874,28 +873,25 @@ gimbal_config_axis_t Gimbal_Interface::get_gimbal_config_tilt_axis(void) {
   int16_t ret;
 
   get_param(GMB_PARAM_SMOOTH_CONTROL_PITCH, ret);
-  setting.smooth_control = (uint8_t)ret;
+  setting.smooth_control = (uint8_t) ret;
 
   get_param(GMB_PARAM_SMOOTH_FOLLOW_PITCH, ret);
-  setting.smooth_follow = (uint8_t)ret;
+  setting.smooth_follow = (uint8_t) ret;
 
   get_param(GMB_PARAM_WINDOW_FOLLOW_PITCH, ret);
-  setting.window_follow = (uint8_t)ret;
+  setting.window_follow = (uint8_t) ret;
 
   get_param(GMB_PARAM_SPEED_FOLLOW_PITCH, ret);
-  setting.speed_follow = (uint8_t)ret;
+  setting.speed_follow = (uint8_t) ret;
 
   get_param(GMB_PARAM_SPEED_CONTROL_PITCH, ret);
-  setting.speed_control = (uint8_t)ret;
+  setting.speed_control = (uint8_t) ret;
 
   get_param(GMB_PARAM_AXIS_DIR, ret);
 
-  if(ret & 0x01)
-  {
+  if(ret & 0x01) {
     setting.dir = DIR_CCW;
-  }
-  else if(!(ret & 0x01))
-  {
+  } else if(!(ret & 0x01)) {
     setting.dir = DIR_CW;
   }
 
@@ -911,21 +907,18 @@ gimbal_config_axis_t Gimbal_Interface::get_gimbal_config_tilt_axis(void) {
  */
 void Gimbal_Interface::set_gimbal_config_pan_axis(gimbal_config_axis_t config) {
 
-  set_param(GMB_PARAM_SMOOTH_CONTROL_YAW, (int16_t)config.smooth_control);
-  set_param(GMB_PARAM_SMOOTH_FOLLOW_YAW, (int16_t)config.smooth_follow);
-  set_param(GMB_PARAM_WINDOW_FOLLOW_YAW, (int16_t)config.window_follow);
-  set_param(GMB_PARAM_SPEED_FOLLOW_YAW, (int16_t)config.speed_follow);
-  set_param(GMB_PARAM_SPEED_CONTROL_YAW, (int16_t)config.speed_control);
+  set_param(GMB_PARAM_SMOOTH_CONTROL_YAW, (int16_t) config.smooth_control);
+  set_param(GMB_PARAM_SMOOTH_FOLLOW_YAW, (int16_t) config.smooth_follow);
+  set_param(GMB_PARAM_WINDOW_FOLLOW_YAW, (int16_t) config.window_follow);
+  set_param(GMB_PARAM_SPEED_FOLLOW_YAW, (int16_t) config.speed_follow);
+  set_param(GMB_PARAM_SPEED_CONTROL_YAW, (int16_t) config.speed_control);
 
   int16_t get_dir;
   get_param(GMB_PARAM_AXIS_DIR, get_dir);
 
-  if(config.dir == DIR_CCW)
-  {
+  if(config.dir == DIR_CCW) {
     get_dir = get_dir | 0x02;
-  }
-  else
-  {
+  } else {
     get_dir &= (~0x02);
   }
 
@@ -944,28 +937,25 @@ gimbal_config_axis_t Gimbal_Interface::get_gimbal_config_pan_axis(void) {
   int16_t ret;
 
   get_param(GMB_PARAM_SMOOTH_CONTROL_YAW, ret);
-  setting.smooth_control = (uint8_t)ret;
+  setting.smooth_control = (uint8_t) ret;
 
   get_param(GMB_PARAM_SMOOTH_FOLLOW_YAW, ret);
-  setting.smooth_follow = (uint8_t)ret;
+  setting.smooth_follow = (uint8_t) ret;
 
   get_param(GMB_PARAM_WINDOW_FOLLOW_YAW, ret);
-  setting.window_follow = (uint8_t)ret;
+  setting.window_follow = (uint8_t) ret;
 
   get_param(GMB_PARAM_SPEED_FOLLOW_YAW, ret);
-  setting.speed_follow = (uint8_t)ret;
+  setting.speed_follow = (uint8_t) ret;
 
   get_param(GMB_PARAM_SPEED_CONTROL_YAW, ret);
-  setting.speed_control = (uint8_t)ret;
+  setting.speed_control = (uint8_t) ret;
 
   get_param(GMB_PARAM_AXIS_DIR, ret);
 
-  if(ret & 0x02)
-  {
+  if(ret & 0x02) {
     setting.dir = DIR_CCW;
-  }
-  else if(!(ret & 0x02))
-  {
+  } else if(!(ret & 0x02)) {
     setting.dir = DIR_CW;
   }
 
@@ -980,18 +970,15 @@ gimbal_config_axis_t Gimbal_Interface::get_gimbal_config_pan_axis(void) {
  */
 void Gimbal_Interface::set_gimbal_config_roll_axis(gimbal_config_axis_t config) {
 
-  set_param(GMB_PARAM_SMOOTH_CONTROL_ROLL, (int16_t)config.smooth_control);
-  set_param(GMB_PARAM_SPEED_CONTROL_ROLL, (int16_t)config.speed_control);
+  set_param(GMB_PARAM_SMOOTH_CONTROL_ROLL, (int16_t) config.smooth_control);
+  set_param(GMB_PARAM_SPEED_CONTROL_ROLL, (int16_t) config.speed_control);
 
   int16_t get_dir;
   get_param(GMB_PARAM_AXIS_DIR, get_dir);
 
-  if(config.dir == DIR_CCW)
-  {
+  if(config.dir == DIR_CCW) {
     get_dir = get_dir | 0x04;
-  }
-  else
-  {
+  } else {
     get_dir &= (~0x04);
   }
 

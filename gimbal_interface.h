@@ -563,7 +563,7 @@ private:
   //void write_setpoint();
   void write_heartbeat(void);
 
-  Mavlink_Messages last_message;
+  Mavlink_Messages last_message; // stores the last message of each type, plus their sequence numbers and timestamps
 
   gimbal_status_t gimbal_status;
   gimbal_state_t gimbal_state;

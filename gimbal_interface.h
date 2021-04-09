@@ -596,7 +596,7 @@ private:
 
   const uint32_t _time_lost_connection = 60000000;
   const uint32_t _retry_period = 100; // 100ms
-  const uint8_t _max_fetch_attempts = 5; // times
+  const uint8_t _max_fetch_attempts = 100; // times
 
   struct {
     const uint8_t gmb_idx;

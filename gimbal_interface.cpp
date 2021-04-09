@@ -489,41 +489,40 @@ void Gimbal_Interface::param_process(void) {
 
   if(!get_connection()) { _state = GIMBAL_STATE_NOT_PRESENT; }
 
-  switch(_state)
-  {
-  case GIMBAL_STATE_NOT_PRESENT: // gimbal was just connected or we just rebooted    
-    printf("GIMBAL_STATE_NOT_PRESENT\n");
-    reset_params();
-    _state = GIMBAL_STATE_PRESENT_INITIALIZING;
-    break;
+  switch(_state) {
 
-  case GIMBAL_STATE_PRESENT_INITIALIZING:
-    printf("GIMBAL_STATE_PRESENT_INITIALIZING\n");
-    param_update();
-    if(params_initialized()) {
-      for(uint8_t i = 0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
-        printf("Check [%s] %d \n", _params_list[i].gmb_id, _params_list[i].value);
+    case GIMBAL_STATE_NOT_PRESENT: // gimbal was just connected or we just rebooted    
+      printf("GIMBAL_STATE_NOT_PRESENT\n");
+      reset_params();
+      _state = GIMBAL_STATE_PRESENT_INITIALIZING;
+      break;
+
+    case GIMBAL_STATE_PRESENT_INITIALIZING:
+      printf("GIMBAL_STATE_PRESENT_INITIALIZING\n");
+      param_update();
+      if(params_initialized()) {
+        for(uint8_t i = 0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
+          printf("Check [%s] %d \n", _params_list[i].gmb_id, _params_list[i].value);
+        }
+        _state = GIMBAL_STATE_PRESENT_ALIGNING;
       }
-      _state = GIMBAL_STATE_PRESENT_ALIGNING;
-    }
-    break;
+      break;
 
-  case GIMBAL_STATE_PRESENT_ALIGNING:
-    printf("GIMBAL_STATE_PRESENT_ALIGNING\n");
-    param_update();
-    if(current_messages.sys_status.errors_count2 == 0x00) {
-      _state = GIMBAL_STATE_PRESENT_RUNNING;
-      printf("GIMBAL_STATE_PRESENT_RUNNING \n");
-    }
-    else {
-      printf("Error: %d\n", current_messages.sys_status.errors_count2);
-    }
-    break;
+    case GIMBAL_STATE_PRESENT_ALIGNING:
+      printf("GIMBAL_STATE_PRESENT_ALIGNING\n");
+      param_update();
+      if(current_messages.sys_status.errors_count2 == 0x00) {
+        _state = GIMBAL_STATE_PRESENT_RUNNING;
+        printf("GIMBAL_STATE_PRESENT_RUNNING \n");
+      } else {
+        printf("Error: %d\n", current_messages.sys_status.errors_count2);
+      }
+      break;
 
-  case GIMBAL_STATE_PRESENT_RUNNING:
-    //printf("GIMBAL_STATE_PRESENT_RUNNING \n");
-    param_update();
-    break;
+    case GIMBAL_STATE_PRESENT_RUNNING:
+      //printf("GIMBAL_STATE_PRESENT_RUNNING \n");
+      param_update();
+      break;
   }
 }
 

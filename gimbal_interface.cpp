@@ -125,7 +125,7 @@ void Gimbal_Interface::read_messages() {
 
   bool success; // receive success flag
   //Time_Stamps this_timestamps;
-  Sequence_Numbers this_seq_num;
+  //Sequence_Numbers this_seq_num;
   bool received_all = false;  // receive only one message
 
   uint8_t last_message_seq = 255;
@@ -138,9 +138,9 @@ void Gimbal_Interface::read_messages() {
 
     if(success && (message.seq != last_message_seq)) {
 
-      if(message.seq != last_message_seq + 1) {
-        printf("Warning: Most recent message seq number is not in order. Some messages probably dropped.\n");
-      }
+      //if(message.seq != last_message_seq + 1) {
+      //  printf("Warning: Most recent message seq number is not in order. Some messages probably dropped.\n");
+      //}
 
       last_message_seq = message.seq;
 
@@ -173,7 +173,7 @@ void Gimbal_Interface::read_messages() {
 
           // Get channel status
           mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          this_seq_num.heartbeat = chan_status->current_rx_seq;
+          //this_seq_num.heartbeat = chan_status->current_rx_seq;
 
           printf("time (us) = %d\n", time_of_last_heartbeart_us);
           break;
@@ -186,7 +186,7 @@ void Gimbal_Interface::read_messages() {
           //this_timestamps.sys_status = last_message.time_stamps.sys_status;
 
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          this_seq_num.sys_status = channel_status->current_rx_seq;
+          //this_seq_num.sys_status = channel_status->current_rx_seq;
 
           //printf(
           //  "MAVLINK_MSG_ID_SYS_STATUS. control_sensors_enabled = %d, control_sensors_health = %d, control_sensors_present = %d\n",
@@ -204,7 +204,7 @@ void Gimbal_Interface::read_messages() {
           //this_timestamps.mount_status = last_message.time_stamps.mount_status;
 
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          this_seq_num.mount_status = channel_status->current_rx_seq;
+          //this_seq_num.mount_status = channel_status->current_rx_seq;
 
           //printf(
           //  "MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
@@ -222,7 +222,7 @@ void Gimbal_Interface::read_messages() {
           //this_timestamps.mount_orientation = last_message.time_stamps.mount_orientation;
 
           mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          this_seq_num.mount_orientation = chan_status->current_rx_seq;
+          //this_seq_num.mount_orientation = chan_status->current_rx_seq;
 
           //printf(
           //  "MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
@@ -241,7 +241,7 @@ void Gimbal_Interface::read_messages() {
           //this_timestamps.raw_imu = last_message.time_stamps.raw_imu;
 
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          this_seq_num.raw_imu = channel_status->current_rx_seq;
+          //this_seq_num.raw_imu = channel_status->current_rx_seq;
 
           //printf(
           //  "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // , mag-xyz: [%d, %d, %d]
@@ -277,15 +277,14 @@ void Gimbal_Interface::read_messages() {
           }
 
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          this_seq_num.command_ack = channel_status->current_rx_seq;
+          //this_seq_num.command_ack = channel_status->current_rx_seq;
 
           printf(
-            "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d, result_param2 = %d\n",
+            "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d\n",
             message.seq,
             packet.command,
             packet.progress,
-            packet.result,
-            packet.result_param2
+            packet.result
           );
 
           break;

@@ -167,6 +167,7 @@ void Gimbal_Interface::read_messages() {
         mavlink_status_t* chan_status = mavlink_get_channel_status(MAVLINK_COMM_1);
         this_seq_num.heartbeat = chan_status->current_rx_seq;
 
+        prinf("time (us) = %d\n", _last_report_msg_us);
         break;
       }
 
@@ -245,10 +246,17 @@ void Gimbal_Interface::read_messages() {
 
       case MAVLINK_MSG_ID_PARAM_VALUE:
       {
-        printf("MAVLINK_MSG_ID_PARAM_VALUE\n");
-        mavlink_param_value_t packet;
 
+        mavlink_param_value_t packet;
         mavlink_msg_param_value_decode(&message, &packet);
+
+        printf(
+          "MAVLINK_MSG_ID_PARAM_VALUE. ID = %d, index = %d, type = %d, value = %d\n",
+          packet.param_id,
+          packet.param_index,
+          packet.param_type,
+          packet.param_value
+        );
 
         for(uint8_t i = 0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
           // Compare the index from gimbal with the param list 
@@ -256,8 +264,8 @@ void Gimbal_Interface::read_messages() {
 
             _params_list[i].seen = true;
 
-            switch(_params_list[i].state)
-            {
+            switch(_params_list[i].state) {
+
             case PARAM_STATE_NONEXISTANT:
             case PARAM_STATE_NOT_YET_READ:
             case PARAM_STATE_FETCH_AGAIN:
@@ -276,13 +284,18 @@ void Gimbal_Interface::read_messages() {
                 _params_list[i].state = PARAM_STATE_CONSISTENT;
               }
               break;
-            }
-          }
-        }
-      };
+
+            } // switch _params_list[i].state
+
+          } // if
+        } // for
+
+        break;
+      }
+
       default:
       {
-        printf("Warning, did not handle message id %i\n",message.msgid);
+        printf("Warning, did not handle message id %i\n", message.msgid);
         break;
       }
 

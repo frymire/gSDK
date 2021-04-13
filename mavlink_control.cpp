@@ -354,7 +354,7 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
   //WaitForConfigAck(gimbal, 50000);
 
   printf("\"Move\" the gimbal in CTRL_ANGULAR_RATE mode to set the rate...\n");
-  gimbal.set_gimbal_move(0.0f, 0.0f, 180.0f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
+  gimbal.set_gimbal_move(0.0f, 0.0f, 270.0f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
   usleep(5*1000000);
 
   SetLockMode(gimbal); // go back to an actual pointing mode

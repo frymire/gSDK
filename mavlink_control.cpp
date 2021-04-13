@@ -53,6 +53,8 @@ void DisplayGimbalStatus(Gimbal_Interface& gimbal_interface);
 void CheckFirmwareVersion(Gimbal_Interface &gimbal);
 void SetMessageRates(Gimbal_Interface &gimbal);
 void PrintMessageRates(config_mavlink_message_t message_rates);
+void WaitForConfigAck(Gimbal_Interface &gimbal, uint polling_interval_us);
+void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us);
 void TurnOff(Gimbal_Interface &gimbal);
 void TurnOn(Gimbal_Interface &gimbal);
 void ConfigureGimbalAxes(Gimbal_Interface &gimbal);
@@ -284,8 +286,10 @@ void SetLockMode(Gimbal_Interface &gimbal) {
   pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   yaw.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  gimbal.reset_acks();
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  CheckMountConfigureAck(gimbal);
+  WaitForConfigAck(gimbal, 50000);
+  //CheckMountConfigureAck(gimbal);
 }
 
 
@@ -295,25 +299,37 @@ void SetFollowMode(Gimbal_Interface &gimbal) {
   pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
   yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
+  gimbal.reset_acks();
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  CheckMountConfigureAck(gimbal);
+  WaitForConfigAck(gimbal, 50000);
+  //CheckMountConfigureAck(gimbal);
 }
 
-void CheckMountConfigureAck(Gimbal_Interface &gimbal) {
-  uint8_t ack_result = gimbal.get_command_ack_do_mount_configure();
-  if(ack_result == MAV_RESULT_ACCEPTED) {
-    printf("Mount configure command ACK received. %d\n", ack_result);
-  } else {
-    printf("Mount configure command ACK not received. %d\n", ack_result);
-  }
-}
+//void CheckMountConfigureAck(Gimbal_Interface &gimbal) {
+//  uint8_t ack_result = gimbal.get_command_ack_do_mount_configure();
+//  if(ack_result == MAV_RESULT_ACCEPTED) {
+//    printf("Mount configure command ACK received. %d\n", ack_result);
+//  } else {
+//    printf("Mount configure command ACK not received. %d\n", ack_result);
+//  }
+//}
+//
+//void CheckMountControlAck(Gimbal_Interface &gimbal) {
+//  uint8_t ack_result = gimbal.get_command_ack_do_mount_control();
+//  if(ack_result == MAV_RESULT_ACCEPTED) {
+//    printf("Mount control command ACK received. %d\n", ack_result);
+//  } else {
+//    printf("Mount control command ACK not received. %d\n", ack_result);
+//  }
+//}
 
-void CheckMountControlAck(Gimbal_Interface &gimbal) {
-  uint8_t ack_result = gimbal.get_command_ack_do_mount_control();
-  if(ack_result == MAV_RESULT_ACCEPTED) {
-    printf("Mount control command ACK received. %d\n", ack_result);
-  } else {
-    printf("Mount control command ACK not received. %d\n", ack_result);
+void WaitForConfigAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
+  bool done = false;
+  while(!done) {
+    uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();
+    printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
+    if(ack_value == 0) { done = true; }
+    usleep(polling_interval_us);
   }
 }
 
@@ -321,14 +337,19 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
   gimbal.reset_acks();
   gimbal.set_gimbal_move(pitch, roll, yaw);
-  bool done_moving = false;
-  while(!done_moving) {
+  WaitForCommandAck(gimbal, 50000); // poll every 0.05 seconds
+}
+
+
+
+void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
+  bool done = false;
+  while(!done) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
     printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
-    if(ack_value == 0) { done_moving = true; }
-    usleep(1*1000000);
+    if(ack_value == 0) { done = true; }
+    usleep(polling_interval_us);
   }
-  // usleep(10 * 1000000);
 }
 
 void PointHome(Gimbal_Interface &gimbal) {
@@ -336,15 +357,9 @@ void PointHome(Gimbal_Interface &gimbal) {
   printf("Move gimbal to home position.\n");
   SetFollowMode(gimbal);
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
+  gimbal.reset_acks();
   gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
-  //gimbal.set_gimbal_move(0.0f, 0.0f, 0.0f);
-
-  if(gimbal.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
-    printf("Mount configure command ACK received.\n");
-    usleep(5*1000000);
-  } else {
-    printf("Mount configure command ACK not received.\n");
-  }
+  WaitForCommandAck(gimbal, 50000);
 }
 
 void SetGimbalSpeed(Gimbal_Interface &gimbal) {

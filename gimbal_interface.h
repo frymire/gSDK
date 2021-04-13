@@ -546,7 +546,8 @@ private:
 
   bool exit_signalled;
   bool heartbeat_detected;
-  uint64_t time_of_last_heartbeart_us;
+  uint64_t time_of_first_heartbeart_us;
+  //uint64_t time_of_last_heartbeart_us;
 
   pthread_t read_tid;
   pthread_t write_tid;
@@ -582,7 +583,7 @@ private:
   const char* get_param_name(param_index_t param) { return _params_list[param].gmb_id; }
   const uint8_t get_gmb_index(param_index_t param) { return _params_list[param].gmb_idx; }
 
-  const uint32_t _time_lost_connection = 60000000;
+  const uint32_t _time_lost_connection = 10000000; // was 60000000
   const uint32_t _retry_period = 100; // 100ms
   const uint8_t _max_fetch_attempts = 100; // was 5
 

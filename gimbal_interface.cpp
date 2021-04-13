@@ -152,18 +152,24 @@ void Gimbal_Interface::read_messages() {
           printf("MAVLINK_MSG_ID_HEARTBEAT. seq = %d ", message.seq);
           mavlink_msg_heartbeat_decode(&message, &(last_message.heartbeat));
           last_message.time_stamps.heartbeat = get_time_usec();
+          //time_of_last_heartbeart_us = get_time_usec();
+          mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
           // If this is the first time we have detected the heartbeat, store the system and component IDs.
           if(heartbeat_detected == false) {
             last_message.sysid = message.sysid;
             last_message.compid = message.compid;
-            printf("First heartbeat detected. System ID = %d. Component ID = %d. ", message.sysid, message.compid);
             heartbeat_detected = true;
+            time_of_first_heartbeart_us = last_message.time_stamps.heartbeat;
+            printf(
+              "First heartbeat detected. System ID = %d. Component ID = %d. Time (us since epoch) = %ld", 
+              message.sysid, 
+              message.compid,
+              time_of_first_heartbeat
+            );
           }
 
-          time_of_last_heartbeart_us = get_time_usec();
-          mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          printf("time (us) = %ld\n", time_of_last_heartbeart_us);
+          printf("time since first heartbeat (us) = %ld\n", last_message.time_stamps.heartbeat - time_of_first_heartbeat);
           break;
         }
 
@@ -1253,11 +1259,11 @@ bool Gimbal_Interface::get_flag_exit(void) { return exit_signalled; }
 
 bool Gimbal_Interface::get_connection(void) {
 
-  uint64_t timeout = get_time_usec() - time_of_last_heartbeart_us;
-
   // Check heartbeat from gimbal
-  if(!heartbeat_detected && timeout > _time_lost_connection) {
-    printf(" Lost Connection!\n");
+  //uint64_t timeout = get_time_usec() - time_of_last_heartbeart_us;
+  uint64_t time_since_last_heartbeat = get_time_usec() - last_message.time_stamps.heartbeat;
+  if(!heartbeat_detected && (time_since_last_heartbeat > _time_lost_connection)) {
+    printf(" Could not connect.\n");
     return false;
   }
 
@@ -1266,9 +1272,9 @@ bool Gimbal_Interface::get_connection(void) {
 
 bool Gimbal_Interface::present() {
 
-  uint64_t timeout = get_time_usec() - time_of_last_heartbeart_us;
-
-  if(gimbal_state != GIMBAL_STATE_NOT_PRESENT && timeout > _time_lost_connection) { // check time out
+  //uint64_t timeout = get_time_usec() - time_of_last_heartbeart_us;
+  uint64_t time_since_last_heartbeat = get_time_usec() - last_message.time_stamps.heartbeat;
+  if(gimbal_state != GIMBAL_STATE_NOT_PRESENT && (time_since_last_heartbeat > _time_lost_connection)) { // check time out
     printf(" Not Present!\n");
     gimbal_state = GIMBAL_STATE_NOT_PRESENT;
     return false;

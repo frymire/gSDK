@@ -326,7 +326,7 @@ public:
   /// Id of gimbal if it has mounted
   int system_id;
   int gimbal_id;
-  int companion_id;
+  int component_id;
 
   void read_messages();
   int write_message(mavlink_message_t message);
@@ -584,13 +584,13 @@ private:
 
   const uint32_t _time_lost_connection = 60000000;
   const uint32_t _retry_period = 100; // 100ms
-  const uint8_t _max_fetch_attempts = 100; // 5 times
+  const uint8_t _max_fetch_attempts = 5; // 5 times
 
   struct {
     const uint8_t gmb_idx;
     const char* gmb_id;
     int16_t value;
-    param_state_t state;
+    param_state_t state; // PARAM_STATE_CONSISTENT means we received this value from the gimbal
     uint8_t	fetch_attempts;
     bool seen;
   } _params_list[GIMBAL_NUM_TRACKED_PARAMS] = {

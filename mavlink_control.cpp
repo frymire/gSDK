@@ -49,7 +49,6 @@ using std::string;
 void ParseCommandLine(int argc, char** argv, char*& uart_name, int& baudrate);
 void DisplayGimbalStatus(Gimbal_Interface& gimbal_interface);
 
-//void gGimbal_control_sample(Gimbal_Interface &gimbal);
 void PrintFirmwareVersion(Gimbal_Interface &gimbal);
 void SetMessageRates(Gimbal_Interface &gimbal);
 void PrintMessageRates(config_mavlink_message_t message_rates);
@@ -58,8 +57,6 @@ void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us);
 void TurnOff(Gimbal_Interface &gimbal);
 void TurnOn(Gimbal_Interface &gimbal);
 void ConfigureGimbalAxes(Gimbal_Interface &gimbal);
-void CheckMountConfigureAck(Gimbal_Interface &gimbal);
-void CheckMountControlAck(Gimbal_Interface &gimbal);
 void PrintGimbalControlValues(Gimbal_Interface &gimbal);
 void SetLockMode(Gimbal_Interface &gimbal);
 void SetFollowMode(Gimbal_Interface &gimbal);

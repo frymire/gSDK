@@ -588,19 +588,19 @@ void Gimbal_Interface::set_gimbal_reboot(void) {
 
   // Prepare command for off-board mode
   mavlink_message_t message;
-  mavlink_command_long_t comm ={0};
-  comm.target_system = system_id;
-  comm.target_component = gimbal_id;
-  comm.command = MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN;
-  comm.param1 = 0;
-  comm.param2 = 0;
-  comm.param3 = 0;
-  comm.param4 = 1;
-  comm.param5 = 0;
-  comm.param6 = 0;
-  comm.param7 = 0;
-  comm.confirmation = true;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &comm);
+  mavlink_command_long_t command = {0};
+  command.target_system = system_id;
+  command.target_component = gimbal_id;
+  command.command = MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN;
+  command.param1 = 0;
+  command.param2 = 0;
+  command.param3 = 0;
+  command.param4 = 1;
+  command.param5 = 0;
+  command.param6 = 0;
+  command.param7 = 0;
+  command.confirmation = true;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &command);
 
   // --------------------------------------------------------------------------
   //   WRITE
@@ -621,19 +621,19 @@ void Gimbal_Interface::set_gimbal_reboot(void) {
 void Gimbal_Interface::set_gimbal_motor_mode(control_gimbal_motor_t type) {
 
   // Prepare command for off-board mode
-  mavlink_command_long_t comm ={0};
-  comm.target_system = system_id;
-  comm.target_component = gimbal_id;
-  comm.command = MAV_CMD_USER_1;
-  comm.param7 = type;	// type 0 =>off , 1=>on
-  comm.confirmation = true;
+  mavlink_command_long_t command = {0};
+  command.target_system = system_id;
+  command.target_component = gimbal_id;
+  command.command = MAV_CMD_USER_1;
+  command.param7 = type;	// type 0 =>off , 1=>on
+  command.confirmation = true;
 
   // --------------------------------------------------------------------------
   //   ENCODE
   // --------------------------------------------------------------------------
 
   mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &comm);
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &command);
 
   // --------------------------------------------------------------------------
   //   WRITE
@@ -659,15 +659,15 @@ void Gimbal_Interface::set_gimbal_motor_mode(control_gimbal_motor_t type) {
 void Gimbal_Interface::set_gimbal_mode(control_gimbal_mode_t mode) {
 
   // Prepare command for off-board mode
-  mavlink_command_long_t comm ={0};
-  comm.target_system = system_id;
-  comm.target_component = gimbal_id;
-  comm.command = MAV_CMD_USER_2;
-  comm.param7 = mode;
-  comm.confirmation = false;
+  mavlink_command_long_t command = {0};
+  command.target_system = system_id;
+  command.target_component = gimbal_id;
+  command.command = MAV_CMD_USER_2;
+  command.param7 = mode;
+  command.confirmation = false;
 
   mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &comm);
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &command);
 
   // do the write
   int len = write_message(message);
@@ -716,18 +716,18 @@ void Gimbal_Interface::set_gimbal_axes_mode(
 void Gimbal_Interface::set_gimbal_move(float tilt, float roll, float pan) {
 
   // Prepare command for off-board mode
-  mavlink_command_long_t comm = {0};
-  comm.target_system = system_id;
-  comm.target_component = gimbal_id;
-  comm.command = MAV_CMD_DO_MOUNT_CONTROL;
-  comm.confirmation = true;
-  comm.param1 = tilt;
-  comm.param2 = roll;
-  comm.param3 = -pan;
-  comm.param7 = (float)MAV_MOUNT_MODE_MAVLINK_TARGETING;
+  mavlink_command_long_t command = {0};
+  command.target_system = system_id;
+  command.target_component = gimbal_id;
+  command.command = MAV_CMD_DO_MOUNT_CONTROL;
+  command.confirmation = true;
+  command.param1 = tilt;
+  command.param2 = roll;
+  command.param3 = -pan;
+  command.param7 = (float) MAV_MOUNT_MODE_MAVLINK_TARGETING;
 
   mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &comm);
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &command);
 
   int len = write_message(message);
   if(len <= 0)
@@ -781,7 +781,6 @@ void Gimbal_Interface::set_gimbal_motor_control(
  * @param: gain - Defines how fast each axis will return to commanded position.
  * @ret: gimbal_motor_control_t contains setting related to tilt axis
  *
- *
  *	GYRO FILTER 	2
  *	OUTPUT FILTER 	3
  *
@@ -800,34 +799,25 @@ void Gimbal_Interface::get_gimbal_motor_control(
   int16_t value = 0;
 
   get_param(GMB_PARAM_STIFFNESS_PITCH, value);
-  //printf("Pitch stiffness = %d, ", value);
   tilt.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_PITCH, value);
-  //printf("Pitch hold strength = %d, ", value);
   tilt.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_ROLL, value);
-  //printf("Roll stiffness = %d, ", value);
   roll.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_ROLL, value);
-  //printf("Roll hold strength = %d, ", value); 
   roll.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_STIFFNESS_YAW, value);
-  //printf("Yaw stiffness = %d, ", value);
   pan.stiffness = (uint8_t) value;
   get_param(GMB_PARAM_HOLDSTRENGTH_YAW, value);
-  //printf("Yaw hold strength = %d, ", value);
   pan.holdstrength = (uint8_t) value;
 
   get_param(GMB_PARAM_OUTPUT_FILTER, value);
-  //printf("Output filter = %d, ", value); 
   output_filter	= (uint8_t) value;
   get_param(GMB_PARAM_GYRO_FILTER, value);
-  //printf("Gyro filter = %d, ", value);
   gyro_filter = (uint8_t) value;
   get_param(GMB_PARAM_GAIN, value);
-  //printf("Gain = %d\n", value);
   gain= (uint8_t) value;
 }
 
@@ -933,7 +923,6 @@ void Gimbal_Interface::set_gimbal_config_pan_axis(gimbal_config_axis_t config) {
 gimbal_config_axis_t Gimbal_Interface::get_gimbal_config_pan_axis(void) {
 
   gimbal_config_axis_t setting;
-
   int16_t ret;
 
   get_param(GMB_PARAM_SMOOTH_CONTROL_YAW, ret);
@@ -997,7 +986,7 @@ gimbal_config_axis_t Gimbal_Interface::get_gimbal_config_roll_axis(void) {
   int16_t ret;
 
   get_param(GMB_PARAM_SMOOTH_CONTROL_ROLL, ret);
-  setting.smooth_control = (uint8_t)ret;
+  setting.smooth_control = (uint8_t) ret;
 
   // Roll dosen't support in follow mode
   setting.smooth_follow = 0;
@@ -1005,13 +994,12 @@ gimbal_config_axis_t Gimbal_Interface::get_gimbal_config_roll_axis(void) {
   setting.speed_follow = 0;
 
   get_param(GMB_PARAM_SPEED_CONTROL_ROLL, ret);
-  setting.speed_control = (uint8_t)ret;
+  setting.speed_control = (uint8_t) ret;
 
   get_param(GMB_PARAM_AXIS_DIR, ret);
   if(ret & 0x04) {
     setting.dir = DIR_CCW;
-  }
-  else if(!(ret & 0x04)) {
+  } else if(!(ret & 0x04)) {
     setting.dir = DIR_CW;
   }
 
@@ -1038,12 +1026,12 @@ void Gimbal_Interface::set_gimbal_config_mavlink_msg(
   uint8_t orien_rate,
   uint8_t imu_rate) {
 
-  set_param(GMB_PARAM_HEATBEAT_EMIT, (int16_t)emit_heatbeat);
-  set_param(GMB_PARAM_STATUS_RATE, (int16_t)status_rate);
-  set_param(GMB_PARAM_ENCODER_VALUE_RATE, (int16_t)enc_value_rate);
-  set_param(GMB_PARAM_ENCODER_TYPE, (int16_t)enc_type_send);
-  set_param(GMB_PARAM_ORIENTATION_RATE, (int16_t)orien_rate);
-  set_param(GMB_PARAM_RAW_IMU_RATE, (int16_t)imu_rate);
+  set_param(GMB_PARAM_HEATBEAT_EMIT, (int16_t) emit_heatbeat);
+  set_param(GMB_PARAM_STATUS_RATE, (int16_t) status_rate);
+  set_param(GMB_PARAM_ENCODER_VALUE_RATE, (int16_t) enc_value_rate);
+  set_param(GMB_PARAM_ENCODER_TYPE, (int16_t) enc_type_send);
+  set_param(GMB_PARAM_ORIENTATION_RATE, (int16_t) orien_rate);
+  set_param(GMB_PARAM_RAW_IMU_RATE, (int16_t) imu_rate);
 }
 
 /**
@@ -1058,22 +1046,22 @@ config_mavlink_message_t Gimbal_Interface::get_gimbal_config_mavlink_msg(void) {
   int16_t ret;
 
   get_param(GMB_PARAM_HEATBEAT_EMIT, ret);
-  config.emit_heatbeat = (uint8_t)ret;
+  config.emit_heatbeat = (uint8_t) ret;
 
   get_param(GMB_PARAM_STATUS_RATE, ret);
-  config.status_rate = (uint8_t)ret;
+  config.status_rate = (uint8_t) ret;
 
   get_param(GMB_PARAM_ENCODER_VALUE_RATE, ret);
-  config.enc_value_rate = (uint8_t)ret;
+  config.enc_value_rate = (uint8_t) ret;
 
   get_param(GMB_PARAM_ENCODER_TYPE, ret);
-  config.enc_type_send = (uint8_t)ret;
+  config.enc_type_send = (uint8_t) ret;
 
   get_param(GMB_PARAM_ORIENTATION_RATE, ret);
-  config.orientation_rate	= (uint8_t)ret;
+  config.orientation_rate	= (uint8_t) ret;
 
   get_param(GMB_PARAM_RAW_IMU_RATE, ret);
-  config.imu_rate	= (uint8_t)ret;
+  config.imu_rate	= (uint8_t) ret;
 
   return config;
 }
@@ -1095,19 +1083,16 @@ gimbal_status_t Gimbal_Interface::get_gimbal_status(void) {
       /* Check gimbal is follow mode*/
       if(errors_count1 & STATUS1_MODE_FOLLOW_LOCK) {
         this->gimbal_status.mode = GIMBAL_STATE_FOLLOW_MODE;
-      }
-      else {
+      } else {
         this->gimbal_status.mode = GIMBAL_STATE_LOCK_MODE;
       }
-    }
-    else if(not (errors_count1 & STATUS1_MOTORS)) {
+
+    } else if(not (errors_count1 & STATUS1_MOTORS)) {
       this->gimbal_status.state = GIMBAL_STATE_OFF;
-      this->gimbal_status.mode  = GIMBAL_STATE_OFF;
-    }
-    else if(errors_count1 & STATUS1_INIT_MOTOR) { /* Check gimbal is initializing*/
+      this->gimbal_status.mode = GIMBAL_STATE_OFF;
+    } else if(errors_count1 & STATUS1_INIT_MOTOR) { /* Check gimbal is initializing*/
       this->gimbal_status.state = GIMBAL_STATE_INIT;
-    }
-    else if(
+    } else if(
       (errors_count1 & STATUS1_SENSOR_ERROR) ||
       (errors_count1 & STATUS1_MOTOR_PHASE_ERROR) ||
       (errors_count1 & STATUS1_MOTOR_ANGLE_ERROR)) { /* Check gimbal is error state*/
@@ -1122,8 +1107,7 @@ gimbal_status_t Gimbal_Interface::get_gimbal_status(void) {
 
     if(errors_count2 & 0x08) {
       this->gimbal_status.sensor |= SENSOR_EN_PAN;
-    }
-    else {
+    } else {
       this->gimbal_status.sensor = SENSOR_OK; // TODO (MEF): Seems like an error that this is the else condition.
     }
   }
@@ -1155,7 +1139,7 @@ Sequence_Numbers Gimbal_Interface::get_gimbal_seq_num(void) { return last_messag
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
-  if(last_message.time_stamps.command_ack) { // new ack received?
+  if(last_message.time_stamps.command_ack) { // any ack received?
     return last_message.result_cmd_ack_msg_configure;
   }
 }
@@ -1166,7 +1150,7 @@ uint8_t Gimbal_Interface::get_command_ack_do_mount_configure(void) {
  * @ret: Result of command
  */
 uint8_t Gimbal_Interface::get_command_ack_do_mount_control(void) {
-  if(last_message.time_stamps.command_ack) { // new ack received?
+  if(last_message.time_stamps.command_ack) { // any ack received?
     return last_message.result_cmd_ack_msg_control;
   }
 }

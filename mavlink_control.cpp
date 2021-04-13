@@ -319,11 +319,14 @@ void CheckMountControlAck(Gimbal_Interface &gimbal) {
 
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
-  //printf("Before: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
   gimbal.set_gimbal_move(pitch, roll, yaw);
-  //printf("Just After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
-  usleep(10 * 1000000);
-  //printf("10 Seconds After: gimbal.get_command_ack_do_mount_control() = %d\n", gimbal.get_command_ack_do_mount_control());
+  bool done_moving = false;
+  while(!done_moving) {
+    uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
+    printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
+    if(ack_value == 0) { done_moving = true; }
+  }
+  // usleep(10 * 1000000);
 }
 
 void PointHome(Gimbal_Interface &gimbal) {

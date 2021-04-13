@@ -338,9 +338,12 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
 
   printf("Set move gimbal in speed mode.\n");
   control_gimbal_axis_mode_t pitch, roll, yaw;
-  pitch.input_mode = CTRL_ANGULAR_RATE;
-  roll.input_mode = CTRL_ANGULAR_RATE;
-  yaw.input_mode = CTRL_ANGULAR_RATE;
+  //pitch.input_mode = CTRL_ANGULAR_RATE;
+  //roll.input_mode = CTRL_ANGULAR_RATE;
+  //yaw.input_mode = CTRL_ANGULAR_RATE;
+  pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  yaw.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
 
   gimbal.reset_acks();
   uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();

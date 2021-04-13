@@ -169,7 +169,8 @@ void Gimbal_Interface::read_messages() {
             );
           }
 
-          printf("Time since first heartbeat (s) = %.3f\n", (last_message.time_stamps.heartbeat - time_of_first_heartbeart_us) / 1000000);
+          float seconds_since_first_heartbeat = ((float) (last_message.time_stamps.heartbeat - time_of_first_heartbeart_us)) / 1000000.0f;
+          printf("Time since first heartbeat (s) = %.3f\n", seconds_since_first_heartbeat);
           break;
         }
 

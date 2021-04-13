@@ -323,10 +323,11 @@ void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
 }
 
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
-  printf("Pointing...\n");
+  printf("Point...\n");
   gimbal.reset_acks();
   gimbal.set_gimbal_move(pitch, roll, yaw);
   WaitForCommandAck(gimbal, 50000); // poll every 0.05 seconds
+  printf("Point complete.\n");
 }
 
 void PointHome(Gimbal_Interface &gimbal) {
@@ -337,6 +338,7 @@ void PointHome(Gimbal_Interface &gimbal) {
   gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw);
   WaitForCommandAck(gimbal, 50000);
   SetLockMode(gimbal);
+  printf("PointHome complete.\n");
 }
 
 void SetGimbalSpeed(Gimbal_Interface &gimbal) {

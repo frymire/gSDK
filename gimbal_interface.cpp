@@ -137,7 +137,8 @@ void Gimbal_Interface::read_messages() {
     if(success && (message.seq != last_message_seq)) {
 
       last_message_seq = message.seq;
-
+      
+      printf("  "); // indent messages
       //printf(
       //  "Message: ID = %d, seq = %d, length = %d\n",
       //  message.msgid,
@@ -254,13 +255,13 @@ void Gimbal_Interface::read_messages() {
             last_message.result_cmd_ack_msg_control = packet.progress; // was packet.result;
           }
 
-          printf(
-            "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d\n",
-            message.seq,
-            packet.command,
-            packet.progress,
-            packet.result
-          );
+          //printf(
+          //  "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d\n",
+          //  message.seq,
+          //  packet.command,
+          //  packet.progress,
+          //  packet.result
+          //);
           break;
         }
 

@@ -306,7 +306,7 @@ void WaitForConfigAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
   bool done = false;
   while(!done) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();
-    printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
+    //printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
     if(ack_value == 0) { done = true; }
     usleep(polling_interval_us);
   }

@@ -222,9 +222,9 @@ void TurnOff(Gimbal_Interface &gimbal) {
 
 void TurnOn(Gimbal_Interface &gimbal) {
   printf("Turning on gimbal...\n");
-  gimbal.reset_acks();
+  //gimbal.reset_acks();
   gimbal.set_gimbal_motor_mode(TURN_ON);
-  WaitForCommandAck(gimbal, 50000);
+  //WaitForCommandAck(gimbal, 50000);
   usleep(5*1000000);
 }
 
@@ -280,7 +280,6 @@ void SetLockMode(Gimbal_Interface &gimbal) {
   //gimbal.reset_acks();
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
   //WaitForConfigAck(gimbal, 50000);
-  //CheckMountConfigureAck(gimbal);
 }
 
 
@@ -293,7 +292,6 @@ void SetFollowMode(Gimbal_Interface &gimbal) {
   //gimbal.reset_acks();
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
   //WaitForConfigAck(gimbal, 50000);
-  //CheckMountConfigureAck(gimbal);
 }
 
 void WaitForConfigAck(Gimbal_Interface &gimbal, uint polling_interval_us) {

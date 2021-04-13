@@ -655,21 +655,21 @@ void Gimbal_Interface::set_gimbal_axes_mode(
   pan.stabilize = 1;
 
   // Prepare command for off-board mode
-  mavlink_command_long_t comm = {0};
-  comm.target_system = system_id;
-  comm.target_component = gimbal_id;
-  comm.confirmation = false;
-  comm.command = MAV_CMD_DO_MOUNT_CONFIGURE;
-  comm.param1 = MAV_MOUNT_MODE_MAVLINK_TARGETING;
-  comm.param2 = roll.stabilize;
-  comm.param3 = tilt.stabilize;
-  comm.param4 = pan.stabilize;
-  comm.param5 = roll.input_mode;
-  comm.param6 = tilt.input_mode;
-  comm.param7 = pan.input_mode;
+  mavlink_command_long_t command = {0};
+  command.target_system = system_id;
+  command.target_component = gimbal_id;
+  command.confirmation = false;
+  command.command = MAV_CMD_DO_MOUNT_CONFIGURE;
+  command.param1 = MAV_MOUNT_MODE_MAVLINK_TARGETING;
+  command.param2 = roll.stabilize;
+  command.param3 = tilt.stabilize;
+  command.param4 = pan.stabilize;
+  command.param5 = roll.input_mode;
+  command.param6 = tilt.input_mode;
+  command.param7 = pan.input_mode;
 
   mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, component_id, &message, &comm);
+  mavlink_msg_command_long_encode(system_id, component_id, &message, &command);
 
   int len = write_message(message);
   if(len <= 0)

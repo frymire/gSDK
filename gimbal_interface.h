@@ -171,14 +171,12 @@ typedef enum _sensor_state {
   SENSOR_EN_PAN = 0x04, /* Encoder sensor is error at pan axis*/
 } sensor_state_;
 
-
 typedef struct _version {
   uint8_t x;
   uint8_t y;
   uint8_t z;
   const char* type;
 } fw_version_t;
-
 
 /**
  * @brief _control_gimbal_axis_mode_t
@@ -189,54 +187,44 @@ typedef struct _control_gimbal_axis_mode_t {
   control_gimbal_axis_input_mode_t input_mode;
 } control_gimbal_axis_mode_t;
 
-
 /**
  * @brief gimbal_state_t
  * State of gimbal's sensor
  */
-typedef struct _gimbal_status_t
-{
-  uint16_t    load; /*< [ms] Maximum usage the mainloop time. Values: [0-1000] - should always be below 1000*/
-  uint16_t    voltage_battery; /*< [V] Battery voltage*/
-  uint8_t     sensor; /*< Specific sensor occur error (encorder, imu) refer sensor_state_*/
-  uint16_t    state;  /* System state of gimbal. Refer gimbal_state_t*/
-  uint8_t     mode;   /*< Gimbal mode is running*/
-  uint32_t    seq;
+typedef struct _gimbal_status_t {
+  uint16_t load; /*< [ms] Maximum usage the mainloop time. Values: [0-1000] - should always be below 1000*/
+  uint16_t voltage_battery; /*< [V] Battery voltage*/
+  uint8_t sensor; /*< Specific sensor occur error (encorder, imu) refer sensor_state_*/
+  uint16_t state;  /* System state of gimbal. Refer gimbal_state_t*/
+  uint8_t mode;   /*< Gimbal mode is running*/
+  uint32_t seq;
 } gimbal_status_t;
-
 
 /**
  * @brief _gimbal_config_t
  * This structure will contain the gimbal configuration related to speed, smooth, direction
  */
-typedef struct _gimbal_config_axis_t
-{
-  int8_t 	dir;
+typedef struct _gimbal_config_axis_t {
+  int8_t dir;
   uint8_t	speed_control;
   uint8_t smooth_control;
-
   uint8_t speed_follow;
   uint8_t smooth_follow;
   uint8_t	window_follow;
-
 } gimbal_config_axis_t;
-
 
 /**
  * @brief config_mavlink_message_t
  * This structure will contain the configuration related to mavlink message
  */
-typedef struct _config_mavlink_message_t
-{
+typedef struct _config_mavlink_message_t {
   uint8_t emit_heatbeat;
   uint8_t status_rate;
   uint8_t enc_value_rate;
   uint8_t enc_type_send;
   uint8_t orientation_rate;
   uint8_t imu_rate;
-
 } config_mavlink_message_t;
-
 
 /**
  * @brief _gimbal_motor_control_t
@@ -251,7 +239,6 @@ typedef struct _gimbal_motor_control_t {
   uint8_t stiffness;
   uint8_t	holdstrength;
 } gimbal_motor_control_t;
-
 
 enum param_state_t {
   PARAM_STATE_NOT_YET_READ = 0,	// parameter has yet to be initialized
@@ -369,6 +356,12 @@ public:
   mavlink_mount_status_t get_gimbal_mount_status(void);
   Time_Stamps get_gimbal_time_stamps(void);
   Sequence_Numbers get_gimbal_seq_num(void);
+
+  /* Set the ack variables to something other than zero. Typically call this before a command. */
+  void reset_acks(void) {
+    last_message.result_cmd_ack_msg_configure = 255;
+    last_message.result_cmd_ack_msg_control = 255;
+  }
 
   /**
    * @brief  This function get the feedback from gimbal after sending

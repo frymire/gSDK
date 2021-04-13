@@ -319,6 +319,7 @@ void CheckMountControlAck(Gimbal_Interface &gimbal) {
 
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("Pointing...\n");
+  gimbal.reset_acks();
   gimbal.set_gimbal_move(pitch, roll, yaw);
   bool done_moving = false;
   while(!done_moving) {

@@ -1309,7 +1309,7 @@ void Gimbal_Interface::write_thread(void) {
     if(tnow_ms - time_send_heartbeat > 1000000) {
       time_send_heartbeat = get_time_usec();
       write_heartbeat(); // write a message and signal writing
-      printf("HB: %d\n", (uint32_t)(tnow_ms - time_send_heartbeat));
+      //printf("HB: %d\n", (uint32_t)(tnow_ms - time_send_heartbeat));
     } else if(tnow_ms - time_send_param > 500000) {
       time_send_param = get_time_usec();
       param_process(); // process check param

@@ -345,7 +345,7 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
   gimbal.reset_acks();
   uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();
   printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
-  //gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
+  gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
   usleep(1*1000000);
   ack_value = gimbal.get_command_ack_do_mount_configure();
   printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);

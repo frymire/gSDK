@@ -329,8 +329,10 @@ void PointHome(Gimbal_Interface &gimbal) {
   SetFollowMode(gimbal);
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
   gimbal.reset_acks();
-  gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
+  gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw);
+  //gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
   WaitForCommandAck(gimbal, 50000);
+  SetLockMode(gimbal);
 }
 
 void SetGimbalSpeed(Gimbal_Interface &gimbal) {
@@ -352,8 +354,7 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
   //WaitForConfigAck(gimbal, 50000);
 
   printf("\"Move\" the gimbal in CTRL_ANGULAR_RATE mode to set the rate...\n");
-  //gimbal.set_gimbal_move(90.0f, 90.0f, 90.0f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
-  gimbal.set_gimbal_move(0.1f, 0.0f, 0.1f);
+  gimbal.set_gimbal_move(180.0f, -60.0f, 0.0f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
   usleep(5*1000000);
 
   SetLockMode(gimbal); // go back to an actual pointing mode

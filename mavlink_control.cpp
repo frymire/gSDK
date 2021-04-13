@@ -326,6 +326,7 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
     printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
     if(ack_value == 0) { done_moving = true; }
+    usleep(1*1000000);
   }
   // usleep(10 * 1000000);
 }

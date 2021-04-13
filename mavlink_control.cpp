@@ -28,7 +28,8 @@
  *
  ******************************************************************************/
 
-//#include <iostream>
+#include <cstdio> // getchar
+
 #include <stdio.h>
 #include <cstdlib>
 #include <unistd.h>
@@ -97,15 +98,19 @@ int main(int argc, char** argv) {
     SetMessageRates(gimbal);
     TurnOff(gimbal);
     TurnOn(gimbal);
-    ConfigureGimbalAxes(gimbal);
-    SetLockMode(gimbal);
-    Point(gimbal, 80.0f, 25.0f, 0.0f);
-    SetGimbalSpeed(gimbal);
-    Point(gimbal, -45.0f, -10.0f, 0.0f);
-    PointHome(gimbal);
-
     //printf("Rebooting gimbal.\n");
     //gimbal.set_gimbal_reboot();
+    ConfigureGimbalAxes(gimbal);
+    SetLockMode(gimbal);
+
+    // Wait for user input
+    printf("Hit Enter to start:");
+    char key = getchar();
+    printf("\n");
+
+    Point(gimbal, 80.0f, 25.0f, 0.0f);
+    Point(gimbal, -45.0f, -10.0f, 0.0f);
+    PointHome(gimbal);
 
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {
@@ -338,22 +343,24 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
 
   printf("Set move gimbal in speed mode.\n");
   control_gimbal_axis_mode_t pitch, roll, yaw;
-  //pitch.input_mode = CTRL_ANGULAR_RATE;
-  //roll.input_mode = CTRL_ANGULAR_RATE;
-  //yaw.input_mode = CTRL_ANGULAR_RATE;
-  pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-  roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-  yaw.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
+  pitch.input_mode = CTRL_ANGULAR_RATE;
+  roll.input_mode = CTRL_ANGULAR_RATE;
+  yaw.input_mode = CTRL_ANGULAR_RATE;
 
   gimbal.reset_acks();
-  uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();
+  uint8_t ack_value = gimbal.get_command_ack_do_mount_configure(); // 255
   printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
   usleep(1*1000000);
+
+  // TODO: Checking the COMMAND_ACK again, we see progress = 96. It's not clear what this means. In 
+  // any case, though, the call to set_gimbal_axes_mode() never seems to have any effect regardless
+  // of the parameters we set or how long we wait for it to take effect. I suspect it doesn't work
+  // at all within the gimbal.
   ack_value = gimbal.get_command_ack_do_mount_configure();
   printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
 
-  //WaitForConfigAck(gimbal, 50000);
+  //WaitForConfigAck(gimbal, 50000); // This will stall forever.
 
   printf("\"Move\" the gimbal in CTRL_ANGULAR_RATE mode to set the rate...\n");
   gimbal.set_gimbal_move(0.0f, 0.0f, -180.0f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
@@ -371,7 +378,6 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
 //      sdk.state = STATE_IDLE;
 //    }
 //  }
-
 
 void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
 

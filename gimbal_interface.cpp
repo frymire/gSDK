@@ -162,14 +162,14 @@ void Gimbal_Interface::read_messages() {
             heartbeat_detected = true;
             time_of_first_heartbeart_us = last_message.time_stamps.heartbeat;
             printf(
-              "First heartbeat detected. System ID = %d. Component ID = %d. Time (us since epoch) = %ld", 
+              "First heartbeat detected. System ID = %d. Component ID = %d. Time (us since epoch) = %ld. ", 
               message.sysid, 
               message.compid,
               time_of_first_heartbeart_us
             );
           }
 
-          printf("time since first heartbeat (us) = %ld\n", last_message.time_stamps.heartbeat - time_of_first_heartbeart_us);
+          printf("Time since first heartbeat (s) = %.3f\n", (last_message.time_stamps.heartbeat - time_of_first_heartbeart_us) / 1000000);
           break;
         }
 

@@ -138,7 +138,6 @@ void Gimbal_Interface::read_messages() {
 
       last_message_seq = message.seq;
       
-      printf("  "); // indent messages
       //printf(
       //  "Message: ID = %d, seq = %d, length = %d\n",
       //  message.msgid,
@@ -150,7 +149,7 @@ void Gimbal_Interface::read_messages() {
 
         case MAVLINK_MSG_ID_HEARTBEAT:
         {
-          printf("MAVLINK_MSG_ID_HEARTBEAT. seq = %d ", message.seq);
+          printf("  MAVLINK_MSG_ID_HEARTBEAT. seq = %d ", message.seq);
           mavlink_msg_heartbeat_decode(&message, &(last_message.heartbeat));
           last_message.time_stamps.heartbeat = get_time_usec();
           //time_of_last_heartbeart_us = get_time_usec();
@@ -182,7 +181,7 @@ void Gimbal_Interface::read_messages() {
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
           //printf(
-          //  "MAVLINK_MSG_ID_SYS_STATUS. control_sensors_enabled = %d, control_sensors_health = %d, control_sensors_present = %d\n",
+          //  "  MAVLINK_MSG_ID_SYS_STATUS. control_sensors_enabled = %d, control_sensors_health = %d, control_sensors_present = %d\n",
           //  last_message.sys_status.onboard_control_sensors_enabled,
           //  last_message.sys_status.onboard_control_sensors_health,
           //  last_message.sys_status.onboard_control_sensors_present
@@ -197,7 +196,7 @@ void Gimbal_Interface::read_messages() {
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
           //printf(
-          //  "MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
+          //  "  MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
           //  last_message.mount_status.pointing_c,
           //  last_message.mount_status.pointing_a,
           //  last_message.mount_status.pointing_b
@@ -212,7 +211,7 @@ void Gimbal_Interface::read_messages() {
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
           //printf(
-          //  "MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
+          //  "  MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
           //  last_message.mount_orientation.yaw,
           //  last_message.mount_orientation.pitch,
           //  last_message.mount_orientation.roll,
@@ -228,7 +227,7 @@ void Gimbal_Interface::read_messages() {
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
           //printf(
-          //  "MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // , mag-xyz: [%d, %d, %d]
+          //  "  MAVLINK_MSG_ID_RAW_IMU. accelerometer XYZ: [%d, %d, %d], gyro XYZ: [%d, %d, %d]\n", // , mag-xyz: [%d, %d, %d]
           //  last_message.raw_imu.xacc,
           //  last_message.raw_imu.yacc,
           //  last_message.raw_imu.zacc,
@@ -256,7 +255,7 @@ void Gimbal_Interface::read_messages() {
           }
 
           //printf(
-          //  "MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d\n",
+          //  "  MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d\n",
           //  message.seq,
           //  packet.command,
           //  packet.progress,
@@ -271,7 +270,7 @@ void Gimbal_Interface::read_messages() {
           mavlink_msg_param_value_decode(&message, &packet);
 
           printf(
-            "MAVLINK_MSG_ID_PARAM_VALUE. seq = %d, ID = %s, index = %d, type = %d, value = %f\n",
+            "  MAVLINK_MSG_ID_PARAM_VALUE. seq = %d, ID = %s, index = %d, type = %d, value = %f\n",
             message.seq,
             packet.param_id,
             packet.param_index,
@@ -375,7 +374,7 @@ bool Gimbal_Interface::params_initialized() {
 
 bool Gimbal_Interface::params_received_all() {
 
-  for(uint8_t i=0; i<GIMBAL_NUM_TRACKED_PARAMS; i++) {
+  for(uint8_t i=0; i < GIMBAL_NUM_TRACKED_PARAMS; i++) {
     if(_params_list[i].state == PARAM_STATE_NOT_YET_READ || _params_list[i].state == PARAM_STATE_FETCH_AGAIN) {
       return false;
     }

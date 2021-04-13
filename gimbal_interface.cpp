@@ -1253,7 +1253,7 @@ bool Gimbal_Interface::get_flag_exit(void) { return exit_signalled; }
 
 bool Gimbal_Interface::get_connection(void) {
 
-  uint32_t timeout = get_time_usec() - time_of_last_heartbeart_us;
+  uint64_t timeout = get_time_usec() - time_of_last_heartbeart_us;
 
   // Check heartbeat from gimbal
   if(!heartbeat_detected && timeout > _time_lost_connection) {
@@ -1266,7 +1266,7 @@ bool Gimbal_Interface::get_connection(void) {
 
 bool Gimbal_Interface::present() {
 
-  uint32_t timeout = get_time_usec() - time_of_last_heartbeart_us;
+  uint64_t timeout = get_time_usec() - time_of_last_heartbeart_us;
 
   if(gimbal_state != GIMBAL_STATE_NOT_PRESENT && timeout > _time_lost_connection) { // check time out
     printf(" Not Present!\n");

@@ -546,7 +546,7 @@ private:
 
   bool exit_signalled;
   bool heartbeat_detected;
-  uint32_t time_of_last_heartbeart_us;
+  uint64_t time_of_last_heartbeart_us;
 
   pthread_t read_tid;
   pthread_t write_tid;

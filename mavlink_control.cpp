@@ -187,9 +187,6 @@ void PrintFirmwareVersion(Gimbal_Interface &gimbal) {
 
 void SetMessageRates(Gimbal_Interface &gimbal) {
   
-  //config_mavlink_message_t message_rates = gimbal.get_gimbal_config_mavlink_msg(); 
-  //usleep(3*1000000);
-  //PrintMessageRates(message_rates);
   PrintMessageRates(gimbal.get_gimbal_config_mavlink_msg());
   
   printf("Setting message rates...\n");
@@ -202,9 +199,6 @@ void SetMessageRates(Gimbal_Interface &gimbal) {
   gimbal.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orientation_rate, imu_rate);
   //usleep(3*1000000);
   
-  //message_rates = gimbal.get_gimbal_config_mavlink_msg();
-  //usleep(3*1000000);
-  //PrintMessageRates(message_rates);
   PrintMessageRates(gimbal.get_gimbal_config_mavlink_msg());
 }
 

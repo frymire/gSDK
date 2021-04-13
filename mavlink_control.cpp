@@ -95,12 +95,7 @@ int main(int argc, char** argv) {
     serial_port.start();
     gimbal.start();
 
-    // Spin until the gimbal is ready
-    //while(!gimbal.present()) {
-    //  printf("Gimbal not present.\n");
-    //  usleep(1000000);
-    //} 
-
+    while(!gimbal.present()) { usleep(1000000); } // spin until the gimbal is ready
     PrintFirmwareVersion(gimbal);
     SetMessageRates(gimbal);
     TurnOff(gimbal);
@@ -195,23 +190,25 @@ void PrintFirmwareVersion(Gimbal_Interface &gimbal) {
 
 void SetMessageRates(Gimbal_Interface &gimbal) {
   
-  config_mavlink_message_t message_rates = gimbal.get_gimbal_config_mavlink_msg(); 
-  usleep(3*1000000);
-  PrintMessageRates(message_rates);
+  //config_mavlink_message_t message_rates = gimbal.get_gimbal_config_mavlink_msg(); 
+  //usleep(3*1000000);
+  //PrintMessageRates(message_rates);
+  PrintMessageRates(gimbal.get_gimbal_config_mavlink_msg());
   
   printf("Setting message rates...\n");
   uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
   uint8_t status_rate = 10; // 10
   uint8_t enc_value_rate = 10; // 10
   uint8_t enc_type_send = 0;  // angle encoding (0)
-  uint8_t orientation_rate = 50; // 50
+  uint8_t orientation_rate = 8; // 50
   uint8_t imu_rate = 5;
   gimbal.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orientation_rate, imu_rate);
-  usleep(3*1000000);
+  //usleep(3*1000000);
   
-  message_rates = gimbal.get_gimbal_config_mavlink_msg();
-  usleep(3*1000000);
-  PrintMessageRates(message_rates);
+  //message_rates = gimbal.get_gimbal_config_mavlink_msg();
+  //usleep(3*1000000);
+  //PrintMessageRates(message_rates);
+  PrintMessageRates(gimbal.get_gimbal_config_mavlink_msg());
 }
 
 void PrintMessageRates(config_mavlink_message_t message_rates) {

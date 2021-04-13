@@ -428,6 +428,7 @@ void Gimbal_Interface::get_param(param_index_t param, int16_t &value, int16_t va
   }
 }
 
+/* Transmits a message to the gimbal to set a parameter. */
 void Gimbal_Interface::set_param(param_index_t param, int16_t value) {
 
   if((_params_list[param].state == PARAM_STATE_CONSISTENT) && (_params_list[param].value == value)) { return; }
@@ -457,6 +458,7 @@ void Gimbal_Interface::set_param(param_index_t param, int16_t value) {
   if(len <= 0) { fprintf(stderr, "WARNING: could not set param: %s\n", get_param_name(param)); }
 }
 
+// Queries the gimbal to update the local values of all gimbal parameters.
 void Gimbal_Interface::param_update() {
 
   uint32_t tnow_ms = get_time_msec();
@@ -1034,34 +1036,31 @@ void Gimbal_Interface::set_gimbal_config_mavlink_msg(
   set_param(GMB_PARAM_RAW_IMU_RATE, (int16_t) imu_rate);
 }
 
-/**
- * @brief  This function get the config of mavlink message
- *
- * @param: None
- * @ret: config_mavlink_message_t contains setting related to the mavlink message
+/* Returns the _currently_ known values of the gimbal message emission rates. 
+ * Does not query the gimbal again to obtain the most recent values.
  */
 config_mavlink_message_t Gimbal_Interface::get_gimbal_config_mavlink_msg(void) {
 
   config_mavlink_message_t config;
-  int16_t ret;
+  int16_t value;
 
-  get_param(GMB_PARAM_HEATBEAT_EMIT, ret);
-  config.emit_heatbeat = (uint8_t) ret;
+  get_param(GMB_PARAM_HEATBEAT_EMIT, value);
+  config.emit_heatbeat = (uint8_t) value;
 
-  get_param(GMB_PARAM_STATUS_RATE, ret);
-  config.status_rate = (uint8_t) ret;
+  get_param(GMB_PARAM_STATUS_RATE, value);
+  config.status_rate = (uint8_t) value;
 
-  get_param(GMB_PARAM_ENCODER_VALUE_RATE, ret);
-  config.enc_value_rate = (uint8_t) ret;
+  get_param(GMB_PARAM_ENCODER_VALUE_RATE, value);
+  config.enc_value_rate = (uint8_t) value;
 
-  get_param(GMB_PARAM_ENCODER_TYPE, ret);
-  config.enc_type_send = (uint8_t) ret;
+  get_param(GMB_PARAM_ENCODER_TYPE, value);
+  config.enc_type_send = (uint8_t) value;
 
-  get_param(GMB_PARAM_ORIENTATION_RATE, ret);
-  config.orientation_rate	= (uint8_t) ret;
+  get_param(GMB_PARAM_ORIENTATION_RATE, value);
+  config.orientation_rate	= (uint8_t) value;
 
-  get_param(GMB_PARAM_RAW_IMU_RATE, ret);
-  config.imu_rate	= (uint8_t) ret;
+  get_param(GMB_PARAM_RAW_IMU_RATE, value);
+  config.imu_rate	= (uint8_t) value;
 
   return config;
 }

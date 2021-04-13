@@ -188,7 +188,7 @@ void HandleQuitSignal(int sig) {
 
 
 void PrintFirmwareVersion(Gimbal_Interface &gimbal) {
-  if(!gimbal.present()) { print("WARNING: Printing firmware version before gimbal initialization is complete.\n"); }
+  if(!gimbal.present()) { printf("WARNING: Printing firmware version before gimbal initialization is complete.\n"); }
   fw_version_t fw = gimbal.get_gimbal_version();
   printf("Firmware Version %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
 }

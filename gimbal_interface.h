@@ -369,7 +369,6 @@ public:
    * @param: None
    * @ret: In-progress or Accepted. Refer to @MAV_RESULT
    */
-
   uint8_t get_command_ack_do_mount_configure(void);
 
   /**
@@ -378,9 +377,11 @@ public:
    * @param: None
    * @ret: In-progress or Accepted. Refer to @MAV_RESULT
    */
-
   uint8_t get_command_ack_do_mount_control(void);
 
+  /* Populates a fw_version_t struct with the _currently_ known firmware version values. This 
+   * does not query the gimbal to obtain the values.
+   */
   fw_version_t get_gimbal_version(void) {
 
     fw_version_t fw;

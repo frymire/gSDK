@@ -50,7 +50,7 @@ void ParseCommandLine(int argc, char** argv, char*& uart_name, int& baudrate);
 void DisplayGimbalStatus(Gimbal_Interface& gimbal_interface);
 
 //void gGimbal_control_sample(Gimbal_Interface &gimbal);
-void CheckFirmwareVersion(Gimbal_Interface &gimbal);
+void PrintFirmwareVersion(Gimbal_Interface &gimbal);
 void SetMessageRates(Gimbal_Interface &gimbal);
 void PrintMessageRates(config_mavlink_message_t message_rates);
 void WaitForConfigAck(Gimbal_Interface &gimbal, uint polling_interval_us);
@@ -96,12 +96,12 @@ int main(int argc, char** argv) {
     gimbal.start();
 
     // Spin until the gimbal is ready
-    while(!gimbal.present()) {
-      printf("Gimbal not present.\n");
-      usleep(1000000);
-    } 
+    //while(!gimbal.present()) {
+    //  printf("Gimbal not present.\n");
+    //  usleep(1000000);
+    //} 
 
-    CheckFirmwareVersion(gimbal);
+    PrintFirmwareVersion(gimbal);
     SetMessageRates(gimbal);
     TurnOff(gimbal);
     TurnOn(gimbal);
@@ -187,10 +187,9 @@ void HandleQuitSignal(int sig) {
 }
 
 
-void CheckFirmwareVersion(Gimbal_Interface &gimbal) {
-  printf("Checking firmware version...\n");
+void PrintFirmwareVersion(Gimbal_Interface &gimbal) {
+  if(!gimbal.present()) { print("WARNING: Printing firmware version before gimbal initialization is complete.\n"); }
   fw_version_t fw = gimbal.get_gimbal_version();
-  usleep(3*1000000);
   printf("Firmware Version %d.%d.%d.%s\n", fw.x, fw.y, fw.z, fw.type);
 }
 
@@ -305,29 +304,21 @@ void SetFollowMode(Gimbal_Interface &gimbal) {
   //CheckMountConfigureAck(gimbal);
 }
 
-//void CheckMountConfigureAck(Gimbal_Interface &gimbal) {
-//  uint8_t ack_result = gimbal.get_command_ack_do_mount_configure();
-//  if(ack_result == MAV_RESULT_ACCEPTED) {
-//    printf("Mount configure command ACK received. %d\n", ack_result);
-//  } else {
-//    printf("Mount configure command ACK not received. %d\n", ack_result);
-//  }
-//}
-//
-//void CheckMountControlAck(Gimbal_Interface &gimbal) {
-//  uint8_t ack_result = gimbal.get_command_ack_do_mount_control();
-//  if(ack_result == MAV_RESULT_ACCEPTED) {
-//    printf("Mount control command ACK received. %d\n", ack_result);
-//  } else {
-//    printf("Mount control command ACK not received. %d\n", ack_result);
-//  }
-//}
-
 void WaitForConfigAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
   bool done = false;
   while(!done) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();
     printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
+    if(ack_value == 0) { done = true; }
+    usleep(polling_interval_us);
+  }
+}
+
+void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
+  bool done = false;
+  while(!done) {
+    uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
+    printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
     if(ack_value == 0) { done = true; }
     usleep(polling_interval_us);
   }
@@ -340,20 +331,7 @@ void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   WaitForCommandAck(gimbal, 50000); // poll every 0.05 seconds
 }
 
-
-
-void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
-  bool done = false;
-  while(!done) {
-    uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
-    printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
-    if(ack_value == 0) { done = true; }
-    usleep(polling_interval_us);
-  }
-}
-
 void PointHome(Gimbal_Interface &gimbal) {
-
   printf("Move gimbal to home position.\n");
   SetFollowMode(gimbal);
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();

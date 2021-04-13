@@ -286,9 +286,9 @@ void SetLockMode(Gimbal_Interface &gimbal) {
   pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   yaw.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
-  gimbal.reset_acks();
+  //gimbal.reset_acks();
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  WaitForConfigAck(gimbal, 50000);
+  //WaitForConfigAck(gimbal, 50000);
   //CheckMountConfigureAck(gimbal);
 }
 
@@ -299,9 +299,9 @@ void SetFollowMode(Gimbal_Interface &gimbal) {
   pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
   yaw.input_mode = CTRL_ANGLE_BODY_FRAME;
-  gimbal.reset_acks();
+  //gimbal.reset_acks();
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  WaitForConfigAck(gimbal, 50000);
+  //WaitForConfigAck(gimbal, 50000);
   //CheckMountConfigureAck(gimbal);
 }
 

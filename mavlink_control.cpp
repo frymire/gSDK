@@ -214,13 +214,17 @@ void PrintMessageRates(config_mavlink_message_t message_rates) {
 
 void TurnOff(Gimbal_Interface &gimbal) {
   printf("Turning off gimbal...\n");
+  gimbal.reset_acks();
   gimbal.set_gimbal_motor_mode(TURN_OFF);
+  WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us);
   usleep(5*1000000);
 }
 
 void TurnOn(Gimbal_Interface &gimbal) {
   printf("Turning on gimbal...\n");
+  gimbal.reset_acks();
   gimbal.set_gimbal_motor_mode(TURN_ON);
+  WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us);
   usleep(5*1000000);
 }
 

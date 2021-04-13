@@ -99,9 +99,9 @@ int main(int argc, char** argv) {
     TurnOn(gimbal);
     ConfigureGimbalAxes(gimbal);
     SetLockMode(gimbal);
-    Point(gimbal, 80.0f, 25.0f, -45.0f);
+    Point(gimbal, 80.0f, 25.0f, 0.0f);
     SetGimbalSpeed(gimbal);
-    Point(gimbal, -45.0f, -10.0f, 30.0f);
+    Point(gimbal, -45.0f, -10.0f, 0.0f);
     PointHome(gimbal);
 
     //printf("Rebooting gimbal.\n");
@@ -330,7 +330,6 @@ void PointHome(Gimbal_Interface &gimbal) {
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
   gimbal.reset_acks();
   gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw);
-  //gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw_absolute);
   WaitForCommandAck(gimbal, 50000);
   SetLockMode(gimbal);
 }

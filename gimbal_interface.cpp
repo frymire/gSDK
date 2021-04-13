@@ -163,7 +163,7 @@ void Gimbal_Interface::read_messages() {
 
           time_of_last_heartbeart_us = get_time_usec();
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
-          printf("time (us) = %d\n", time_of_last_heartbeart_us);
+          printf("time (us) = %ld\n", time_of_last_heartbeart_us);
           break;
         }
 

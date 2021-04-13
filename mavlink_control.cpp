@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     SetLockMode(gimbal);
 
     // Wait for user input
-    printf("Hit Enter to start:");
+    printf("\n\nHit Enter to start:\n\n");
     char key = getchar();
     printf("\n");
 
@@ -316,7 +316,7 @@ void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
   bool done = false;
   while(!done) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
-    printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
+    //printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
     if(ack_value == 0) { done = true; }
     usleep(polling_interval_us);
   }

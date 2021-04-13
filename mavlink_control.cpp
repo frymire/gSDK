@@ -339,15 +339,16 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
   pitch.input_mode = CTRL_ANGULAR_RATE;
   roll.input_mode = CTRL_ANGULAR_RATE;
   yaw.input_mode = CTRL_ANGULAR_RATE;
+
+  gimbal.reset_acks();
+  uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();
+  printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
   gimbal.set_gimbal_axes_mode(pitch, roll, yaw);
-  
-  //if (onboard.get_command_ack_do_mount_configure() == MAV_RESULT_ACCEPTED) {
-    // Do stuff
-  //}
-  
-  //mavlink_mount_orientation_t mount = gimbal.get_gimbal_mount_orientation();
-  //printf("YPR: [%2.3f, %2.3f, %2.3f]\n", mount.yaw, mount.pitch, mount.roll);
-  
+  uint8_t ack_value = gimbal.get_command_ack_do_mount_configure();
+  printf("gimbal.get_command_ack_do_mount_configure() = %d\n", ack_value);
+
+  //WaitForConfigAck(gimbal, 50000);
+
   // "Move" the gimbal in CTRL_ANGULAR_RATE mode to set the rate.
   gimbal.set_gimbal_move(90.0f, 90.0f, 90.0f); // (pitch, roll, yaw) previously (0.1f, 0.0f, 0.1f)
   usleep(5*1000000);

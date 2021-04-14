@@ -141,8 +141,9 @@ int main(int argc, char** argv) {
     };
 
     bool done = false;
+    uint64_t time_since_user_start_ms;
     while(!done) {
-      uint64_t time_since_user_start_ms = get_time_msec() - user_start_time_ms;
+      time_since_user_start_ms = get_time_msec() - user_start_time_ms;
       uint64_t i = time_since_user_start_ms / 1000;
       printf("time_since_user_start_ms = %ld, i = %ld\n", time_since_user_start_ms, i);
       if(i >= k_num_timesteps) { done = true; break; }

@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
       } else {
         printf("Inactive\n");
       }
-      usleep(1000000); // 0.05 s
+      usleep(50000); // 0.05 s
     }
 
     PointHome(gimbal);
@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
     /// Process data until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {
       usleep(1000000);
-      DisplayGimbalStatus(gimbal);
+      //DisplayGimbalStatus(gimbal);
     }
 
     gimbal.stop();

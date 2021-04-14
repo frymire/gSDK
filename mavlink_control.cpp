@@ -109,15 +109,14 @@ int main(int argc, char** argv) {
       printf("Retrieved line of length %zu:\n", read);
       printf("%s", line);
 
-      int n1, n2;
-      float f1, f2, f3;
-      sscanf(line, "%d,%d,%f,%f,%f", &n1, &n2, &f1, &f2, &f3);
-      printf("%d %d %f %f %f", n1, n2, f1, f2, f3);
+      //int n1, n2;
+      //float f1, f2, f3;
+      //sscanf(line, "%d,%d,%f,%f,%f", &n1, &n2, &f1, &f2, &f3);
+      //printf("%d %d %f %f %f", n1, n2, f1, f2, f3);
 
-
-      //fscanf(p_file, "%d,%d,%f,%f,%f", &(commands[j].index), &temp_active, &(commands[j].yaw), &(commands[j].pitch), &(commands[j].roll));
-      //if(temp_active) { commands[j].active = true; } else { commands[j].active = false; }
-      //printf("command = %d %d %f %f %f\n", commands[j].index, commands[j].active, commands[j].yaw, commands[j].pitch, commands[j].roll);
+      sscanf(line, "%d,%d,%f,%f,%f", &(commands[j].index), &temp_active, &(commands[j].yaw), &(commands[j].pitch), &(commands[j].roll));
+      if(temp_active) { commands[j].active = true; } else { commands[j].active = false; }
+      printf("command = %d %d %f %f %f\n", commands[j].index, commands[j].active, commands[j].yaw, commands[j].pitch, commands[j].roll);
       j++;
     }
 

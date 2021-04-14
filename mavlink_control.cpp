@@ -62,7 +62,7 @@ void PrintGimbalControlValues(Gimbal_Interface &gimbal);
 void SetLockMode(Gimbal_Interface &gimbal);
 void SetFollowMode(Gimbal_Interface &gimbal);
 void SetGimbalSpeed(Gimbal_Interface &gimbal);
-void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
+void PointIncremental(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 void PointHome(Gimbal_Interface &gimbal);
 void WriteGimbalStatus(gimbal_status_t gimbal_status);
 void WriteRawIMU(mavlink_raw_imu_t imu);
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     printf("\n\nHit Enter to start:\n\n");
     char key = getchar();
     uint64_t user_start_time_us = get_time_usec();
-    printf("User start time = %ld (us)\n", user_start_time_us);
+    //printf("User start time = %ld (us)\n", user_start_time_us);
 
     const int k_num_timesteps = 20;
     PointingCommand pointing[k_num_timesteps] = {
@@ -145,19 +145,15 @@ int main(int argc, char** argv) {
     while(!done) {
       time_since_user_start_us = get_time_usec() - user_start_time_us;
       uint64_t i = time_since_user_start_us / 1000000;
-      printf("time_since_user_start_us = %ld, i = %ld\n", time_since_user_start_us, i);
+      //printf("time_since_user_start_us = %ld, i = %ld\n", time_since_user_start_us, i);
       if(i >= k_num_timesteps) { done = true; break; }
-      printf("Time = %.3f (s): ", (float) time_since_user_start_us / 1000000.0f);
+      printf("Time = %.3f s: ", (float) time_since_user_start_us / 1000000.0f);
       if(pointing[i].active) { 
-        Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
+        PointAbsolute(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
       } else {
         printf("Inactive\n");
       }
     }
-
-    //for(int i = 0; i < k_num_timesteps; i++) { 
-    //  if(pointing[i].active) { Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); }
-    //}
 
     PointHome(gimbal);
 
@@ -366,22 +362,34 @@ void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
   }
 }
 
-void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
-  printf("Pointing YPR = [%f, %f, %f]...\n", yaw, pitch, roll);
+void PointIncremental(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
+  printf("PointIncremental YPR = [%f, %f, %f]...\n", yaw, pitch, roll);
   gimbal.reset_acks();
   gimbal.set_gimbal_move(pitch, roll, yaw);
   WaitForCommandAck(gimbal, 50000); // poll every 0.05 seconds
-  printf("Point complete.\n");
+  printf("PointIncremental complete.\n");
 }
 
-void PointHome(Gimbal_Interface &gimbal) {
-  printf("Move gimbal to home position.\n");
+void PointAbsolute(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
+  printf("PointAbsolute YPR = [%f, %f, %f]...\n", yaw, pitch, roll);
   SetFollowMode(gimbal);
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
   gimbal.reset_acks();
-  gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw);
+  gimbal.set_gimbal_move(-1*mnt_orien.pitch + pitch, mnt_orien.roll + roll, mnt_orien.yaw + yaw);
   WaitForCommandAck(gimbal, 50000);
   SetLockMode(gimbal);
+  printf("PointAbsolute complete.\n");
+}
+
+void PointHome(Gimbal_Interface &gimbal) {
+  printf("PointHome....\n");
+  //SetFollowMode(gimbal);
+  //mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
+  //gimbal.reset_acks();
+  //gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw);
+  //WaitForCommandAck(gimbal, 50000);
+  //SetLockMode(gimbal);
+  PointAbsolute(gimbal, 0.0f, 0.0f, 0.0f);
   printf("PointHome complete.\n");
 }
 

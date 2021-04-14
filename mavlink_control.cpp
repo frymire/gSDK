@@ -143,9 +143,10 @@ int main(int argc, char** argv) {
     bool done = false;
     while(!done) {
       uint64_t time_since_user_start_ms = get_time_msec() - user_start_time_ms;
-      int i = time_since_user_start_ms / 1000;
+      uint64_t i = time_since_user_start_ms / 1000;
+      printf("time_since_user_start_ms = %ld, i = %ld\n", time_since_user_start_ms, i);
       if(i >= k_num_timesteps) { done = true; break; }
-      printf("Time = %.1f (s): ", (float) time_since_user_start_ms / 1000.0f);
+      printf("Time = %.3f (s): ", (float) time_since_user_start_ms / 1000.0f);
       if(pointing[i].active) { 
         Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
       } else {
@@ -358,7 +359,7 @@ void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
   bool done = false;
   while(!done) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
-    printf("  gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
+    //printf("  gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
     if(ack_value == 0) { done = true; }
     usleep(polling_interval_us);
   }

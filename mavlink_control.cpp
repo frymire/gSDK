@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
       int n1, n2;
       float f1, f2, f3;
       fscanf(p_file, "%d,%d,%f,%f,%f", &n1, &n2, &f1, &f2, &f3);
-      fscanf("%d %d %f %f %f", n1, n2, f1, f2, f3);
+      printf("%d %d %f %f %f", n1, n2, f1, f2, f3);
 
 
       //fscanf(p_file, "%d,%d,%f,%f,%f", &(commands[j].index), &temp_active, &(commands[j].yaw), &(commands[j].pitch), &(commands[j].roll));

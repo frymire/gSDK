@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
     while(!done) {
       time_since_user_start_us = get_time_usec() - user_start_time_us;
       uint64_t i = time_since_user_start_us / 1000000;
-      //printf("time_since_user_start_us = %ld, i = %ld\n", time_since_user_start_us, i);
+      printf("time_since_user_start_us = %ld, i = %ld\n", time_since_user_start_us, i);
       if(i >= k_num_timesteps) { done = true; break; }
       printf("Time = %.3f s: ", (float) time_since_user_start_us / 1000000.0f);
       if(commands[i].active) { 

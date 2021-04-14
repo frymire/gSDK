@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
       fscanf(p_file, "%d,%d,%f,%f,%f", &commands[j].index, &temp_active, &commands[j].yaw, &commands[j].pitch, &commands[j].roll);
       if(temp_active) { commands[j].active = true; } else { commands[j].active = false; }
       printf("command = %d %d %f %f %f\n", commands[j].index, commands[j].active, commands[j].yaw, commands[j].pitch, commands[j].roll);
-      j++
+      j++;
     }
 
     fclose(p_file);

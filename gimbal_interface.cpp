@@ -149,7 +149,7 @@ void Gimbal_Interface::read_messages() {
 
         case MAVLINK_MSG_ID_HEARTBEAT:
         {
-          printf("  MAVLINK_MSG_ID_HEARTBEAT. seq = %d ", message.seq);
+          //printf("  MAVLINK_MSG_ID_HEARTBEAT. seq = %d ", message.seq);
           mavlink_msg_heartbeat_decode(&message, &(last_message.heartbeat));
           last_message.time_stamps.heartbeat = get_time_usec();
           //time_of_last_heartbeart_us = get_time_usec();
@@ -211,7 +211,7 @@ void Gimbal_Interface::read_messages() {
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
           printf(
-            "  MAVLINK_MSG_ID_MOUNT_ORIENTATION. yaw = %.1f, pitch = %.1f, roll = %.1f, absolute yaw = %.1f\n",
+            "  MAVLINK_MSG_ID_MOUNT_ORIENTATION. YPR = [%.1f, %.1f, %.1f], absolute yaw = %.1f\n",
             last_message.mount_orientation.yaw,
             last_message.mount_orientation.pitch,
             last_message.mount_orientation.roll,

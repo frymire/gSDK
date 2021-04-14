@@ -74,6 +74,12 @@ Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
 void HandleQuitSignal(int sig);
 
+struct YPR {
+  float yaw;
+  float pitch;
+  float roll;
+};
+
 int main(int argc, char** argv) {
 
   try {
@@ -108,8 +114,19 @@ int main(int argc, char** argv) {
     char key = getchar();
     printf("\n");
 
-    Point(gimbal, 80.0f, 25.0f, 0.0f);
-    Point(gimbal, -45.0f, -10.0f, 0.0f);
+    const int k_num_timesteps = 2;
+    //float yaw_vs_time[k_num_timesteps] = {80.0, -45.0};
+    //float pitch_vs_time[k_num_timesteps] = {25.0, -10.0};
+
+    YPR pointing[2] = {
+      {80.0, 25.0, 0.0},
+      {-45.0, -10.0, 0.0}
+    };
+
+    for(int i = 0; i < k_num_timesteps; i++) { Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); }   
+    //Point(gimbal, 80.0f, 25.0f, 0.0f);
+    //Point(gimbal, -45.0f, -10.0f, 0.0f);
+
     PointHome(gimbal);
 
     /// Process data until an exit has been signaled.

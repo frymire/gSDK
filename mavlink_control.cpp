@@ -105,10 +105,11 @@ int main(int argc, char** argv) {
     while(!gimbal.present()) { usleep(1000000); } // spin until the gimbal is ready
     PrintFirmwareVersion(gimbal);
     SetMessageRates(gimbal);
-    TurnOff(gimbal);
-    TurnOn(gimbal);
+
     //printf("Rebooting gimbal.\n");
     //gimbal.set_gimbal_reboot();
+
+    TurnOn(gimbal);
     ConfigureGimbalAxes(gimbal);
     SetLockMode(gimbal);
 
@@ -181,6 +182,8 @@ int main(int argc, char** argv) {
       usleep(1000000);
       //DisplayGimbalStatus(gimbal);
     }
+
+    TurnOff(gimbal);
 
     gimbal.stop();
     serial_port.stop();

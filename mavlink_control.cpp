@@ -113,8 +113,8 @@ int main(int argc, char** argv) {
     // Wait for user input
     printf("\n\nHit Enter to start:\n\n");
     char key = getchar();
-    uint64_t user_start_time_ms = get_time_msec();
-    printf("\n");
+    uint64_t user_start_time_us = get_time_usec();
+    printf("User start time = %ld (us)\n", user_start_time_us);
 
     const int k_num_timesteps = 20;
     PointingCommand pointing[k_num_timesteps] = {
@@ -140,14 +140,14 @@ int main(int argc, char** argv) {
       {1, -90.0, -45.0, 0.0}
     };
 
+    uint64_t time_since_user_start_us;
     bool done = false;
-    uint64_t time_since_user_start_ms;
     while(!done) {
-      time_since_user_start_ms = get_time_msec() - user_start_time_ms;
-      uint64_t i = time_since_user_start_ms / 1000;
-      printf("time_since_user_start_ms = %ld, i = %ld\n", time_since_user_start_ms, i);
+      time_since_user_start_us = get_time_usec() - user_start_time_us;
+      uint64_t i = time_since_user_start_us / 1000000;
+      printf("time_since_user_start_us = %ld, i = %ld\n", time_since_user_start_us, i);
       if(i >= k_num_timesteps) { done = true; break; }
-      printf("Time = %.3f (s): ", (float) time_since_user_start_ms / 1000.0f);
+      printf("Time = %.3f (s): ", (float) time_since_user_start_us / 1000000.0f);
       if(pointing[i].active) { 
         Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
       } else {

@@ -100,9 +100,9 @@ int main(int argc, char** argv) {
     int j = 0;
     int temp_active;
     while(!feof(p_file)) {
-      fscanf(p_file, "%d,%d,%f,%f,%f", &command[j].index, &temp_active, &command[j].yaw, &command[j].pitch, &command[j].roll);
-      if(temp_active) { command[j].active = true; } else { command[j].active = false; }
-      printf("command = %d %d %f %f %f\n", command[j].index, command[j].active, command[j].yaw, command[j].pitch, command[j].roll);
+      fscanf(p_file, "%d,%d,%f,%f,%f", &commands[j].index, &temp_active, &commands[j].yaw, &commands[j].pitch, &commands[j].roll);
+      if(temp_active) { commands[j].active = true; } else { commands[j].active = false; }
+      printf("command = %d %d %f %f %f\n", commands[j].index, commands[j].active, commands[j].yaw, commands[j].pitch, commands[j].roll);
       j++
     }
 

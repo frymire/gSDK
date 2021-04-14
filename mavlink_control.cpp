@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
     uint64_t user_start_time_us = get_time_usec();
     //printf("User start time = %ld (us)\n", user_start_time_us);
 
-    const int k_num_timesteps = 30;
+    const int k_num_timesteps = 36;
     PointingCommand pointing[k_num_timesteps] = {
       {0, 1, 135.0, 30.0, 0.0},
       {1, 1, 135.0, 30.0, 0.0}, 

@@ -115,12 +115,9 @@ int main(int argc, char** argv) {
     printf("\n");
 
     const int k_num_timesteps = 2;
-    //float yaw_vs_time[k_num_timesteps] = {80.0, -45.0};
-    //float pitch_vs_time[k_num_timesteps] = {25.0, -10.0};
-
     YPR pointing[2] = {
-      {80.0, 25.0, 0.0},
-      {-45.0, -10.0, 0.0}
+      {135.0, 30.0, 0.0},
+      {-90.0, -45.0, 0.0}
     };
 
     for(int i = 0; i < k_num_timesteps; i++) { 

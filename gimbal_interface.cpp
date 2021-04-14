@@ -254,13 +254,13 @@ void Gimbal_Interface::read_messages() {
             last_message.result_cmd_ack_msg_control = packet.progress; // was packet.result;
           }
 
-          printf(
-            "  MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d\n",
-            message.seq,
-            packet.command,
-            packet.progress,
-            packet.result
-          );
+          //printf(
+          //  "  MAVLINK_MSG_ID_COMMAND_ACK. seq = %d, command = %d, progress = %d, result = %d\n",
+          //  message.seq,
+          //  packet.command,
+          //  packet.progress,
+          //  packet.result
+          //);
           break;
         }
 

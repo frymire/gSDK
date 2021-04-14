@@ -210,8 +210,12 @@ void Gimbal_Interface::read_messages() {
           last_message.time_stamps.mount_orientation = get_time_usec();
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
+          float seconds_since_first_heartbeat = ((float)(last_message.time_stamps.heartbeat - time_of_first_heartbeart_us)) / 1000000.0f;
+          //printf("Time since first heartbeat (s) = %.3f\n", seconds_since_first_heartbeat);
+
           printf(
-            "  MAVLINK_MSG_ID_MOUNT_ORIENTATION. YPR = [%.1f, %.1f, %.1f], absolute yaw = %.1f\n",
+            "  MAVLINK_MSG_ID_MOUNT_ORIENTATION. Time since first heartbeat = %.3f s. YPR = [%.1f, %.1f, %.1f], absolute yaw = %.1f\n",
+            seconds_since_first_heartbeat,
             last_message.mount_orientation.yaw,
             last_message.mount_orientation.pitch,
             last_message.mount_orientation.roll,

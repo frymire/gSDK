@@ -74,7 +74,8 @@ Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
 void HandleQuitSignal(int sig);
 
-struct YPR {
+struct PointingCommand {
+  bool active;
   float yaw;
   float pitch;
   float roll;
@@ -112,20 +113,48 @@ int main(int argc, char** argv) {
     // Wait for user input
     printf("\n\nHit Enter to start:\n\n");
     char key = getchar();
+    uint64_t user_start_time_ms = get_time_msec();
     printf("\n");
 
-    const int k_num_timesteps = 2;
-    YPR pointing[2] = {
-      {135.0, 30.0, 0.0},
-      {-90.0, -45.0, 0.0}
+    const int k_num_timesteps = 20;
+    PointingCommand pointing[k_num_timesteps] = {
+      {1, 135.0, 30.0, 0.0},
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {1, 135.0, 30.0, 0.0}, 
+      {0, -90.0, -45.0, 0.0},
+      {0, -90.0, -45.0, 0.0},
+      {0, -90.0, -45.0, 0.0},
+      {0, -90.0, -45.0, 0.0},
+      {0, -90.0, -45.0, 0.0},
+      {1, -90.0, -45.0, 0.0},
+      {1, -90.0, -45.0, 0.0},
+      {1, -90.0, -45.0, 0.0},
+      {1, -90.0, -45.0, 0.0},
+      {1, -90.0, -45.0, 0.0}
     };
 
-    for(int i = 0; i < k_num_timesteps; i++) { 
-      printf("Pointing YPR = [%f, %f, %f]\n", pointing[i].yaw, pointing[i].pitch, pointing[i].roll);
-      Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
-    }   
-    //Point(gimbal, 80.0f, 25.0f, 0.0f);
-    //Point(gimbal, -45.0f, -10.0f, 0.0f);
+    bool done = false;
+    while(!done) {
+      uint64_t time_since_user_start_ms = get_time_msec() - user_start_time_ms;
+      if(time_since_user_start_ms / 1000 > k_num_timesteps) { done = true; break; }
+      printf("Time = %.1f (s): ", (float) time_since_user_start_ms / 1000.0f);
+      if(pointing[i].active) { 
+        Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
+      } else {
+        printf("Inactive\n");
+      }
+    }
+
+    //for(int i = 0; i < k_num_timesteps; i++) { 
+    //  if(pointing[i].active) { Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); }
+    //}
 
     PointHome(gimbal);
 
@@ -292,9 +321,7 @@ void PrintGimbalControlValues(Gimbal_Interface &gimbal) {
 
 void SetLockMode(Gimbal_Interface &gimbal) {
   printf("Setting lock mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
-
   gimbal.set_gimbal_mode(LOCK_MODE);
-
   control_gimbal_axis_mode_t pitch, roll, yaw;
   pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
@@ -304,12 +331,9 @@ void SetLockMode(Gimbal_Interface &gimbal) {
   //WaitForConfigAck(gimbal, 50000);
 }
 
-
 void SetFollowMode(Gimbal_Interface &gimbal) {
   printf("Set follow mode... (ack result = %d)\n", gimbal.get_command_ack_do_mount_configure());
-
   gimbal.set_gimbal_mode(FOLLOW_MODE);
-
   control_gimbal_axis_mode_t pitch, roll, yaw;
   pitch.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME;
   roll.input_mode = CTRL_ANGLE_ABSOLUTE_FRAME; // can only control roll in ABSOLUTE_FRAME and ANGULAR_RATE
@@ -334,14 +358,13 @@ void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
   while(!done) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
     printf("  gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
-    printf("  gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
     if(ack_value == 0) { done = true; }
     usleep(polling_interval_us);
   }
 }
 
 void Point(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
-  printf("Point...\n");
+  printf("Pointing YPR = [%f, %f, %f]...\n", yaw, pitch, roll);
   gimbal.reset_acks();
   gimbal.set_gimbal_move(pitch, roll, yaw);
   WaitForCommandAck(gimbal, 50000); // poll every 0.05 seconds

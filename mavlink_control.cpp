@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
   try {
 
     // Open a file containing the sensor pointing commands.
-    FILE* p_file = fopen("PointingCommands.csv", "r");
+    FILE* p_file = fopen("/home/rstrauss/gSDK/PointingCommands.csv", "r");
     if(!p_file) {
       printf("Error opening file.\n");
       exit(1);

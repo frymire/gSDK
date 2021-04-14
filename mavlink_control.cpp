@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
     //while(!feof(p_file)) {
       int n1, n2;
       float f1, f2, f3;
-      fscanf(p_file, "%d,%d,%f,%f,%f", &n1, &n2, &f1, &f2, &f3);
+      fscanf(p_file, "%d,%d,%f,%f,%f", n1, n2, f1, f2, f3);
       printf("%d %d %f %f %f", n1, n2, f1, f2, f3);
 
 

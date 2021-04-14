@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     int temp_active;
     while(!feof(p_file)) {
       fscanf(p_file, "%d,%d,%f,%f,%f", &command[j].index, &temp_active, &command[j].yaw, &command[j].pitch, &command[j].roll);
-      if(temp_active) { command.active = true; } else { command.active = false; }
+      if(temp_active) { command[j].active = true; } else { command[j].active = false; }
       printf("command = %d %d %f %f %f\n", command[j].index, command[j].active, command[j].yaw, command[j].pitch, command[j].roll);
       j++
     }

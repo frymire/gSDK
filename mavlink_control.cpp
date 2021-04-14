@@ -149,7 +149,13 @@ int main(int argc, char** argv) {
       {26, 1, -30.0, -15.0, 0.0},
       {27, 1, -20.0, -15.0, 0.0},
       {28, 1, -10.0, -15.0, 0.0},
-      {29, 1, 0.0, -15.0, 0.0}
+      {29, 1, 0.0, 0.0, 0.0},
+      {30, 1, 0.0, 0.0, 0.0},
+      {31, 1, 0.0, 0.0, 0.0},
+      {32, 1, 0.0, 0.0, 0.0},
+      {33, 1, 0.0, 0.0, 0.0},
+      {34, 1, 0.0, 0.0, 0.0},
+      {35, 1, 0.0, 0.0, 0.0},
     };
 
     uint64_t time_since_user_start_us;
@@ -255,9 +261,9 @@ void SetMessageRates(Gimbal_Interface &gimbal) {
   printf("Setting message rates...\n");
   uint8_t emit_heatbeat = 1; // must be 1, otherwise gSDK will wait forever
   uint8_t status_rate = 10; // 10
-  uint8_t enc_value_rate = 10; // 10
+  uint8_t enc_value_rate = 2; // 10
   uint8_t enc_type_send = 0;  // angle encoding (0)
-  uint8_t orientation_rate = 8; // 50
+  uint8_t orientation_rate = 2; // 50
   uint8_t imu_rate = 5;
   gimbal.set_gimbal_config_mavlink_msg(emit_heatbeat, status_rate, enc_value_rate, enc_type_send, orientation_rate, imu_rate);
   //usleep(3*1000000);

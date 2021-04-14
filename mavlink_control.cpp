@@ -202,14 +202,14 @@ int main(int argc, char** argv) {
     }
 
     PointHome(gimbal);
+    usleep(5*1000000);
+    TurnOff(gimbal);
 
-    /// Process data until an exit has been signaled.
+    /// Wait until an exit has been signaled.
     while (!gimbal.get_flag_exit()) {
       usleep(1000000);
       //DisplayGimbalStatus(gimbal);
     }
-
-    TurnOff(gimbal);
 
     gimbal.stop();
     serial_port.stop();

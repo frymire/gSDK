@@ -105,15 +105,16 @@ int main(int argc, char** argv) {
 
     while(j < k_num_timesteps) {
 
-    //  ssize_t read = getline(&line, &len, p_file);
-    //  printf("Retrieved line of length %zu:\n", read);
-    //  printf("%s", line);
+      ssize_t read = getline(&line, &len, p_file);
+      printf("Retrieved line of length %zu:\n", read);
+      printf("%s", line);
 
     //while(!feof(p_file)) {
-      int n1, n2;
-      float f1, f2, f3;
-      fscanf(p_file, "%d,%d,%f,%f,%f", &n1, &n2, &f1, &f2, &f3);
-      printf("%d %d %f %f %f", n1, n2, f1, f2, f3);
+
+      //int n1, n2;
+      //float f1, f2, f3;
+      //fscanf(p_file, "%d,%d,%f,%f,%f", &n1, &n2, &f1, &f2, &f3);
+      //printf("%d %d %f %f %f", n1, n2, f1, f2, f3);
 
 
       //fscanf(p_file, "%d,%d,%f,%f,%f", &(commands[j].index), &temp_active, &(commands[j].yaw), &(commands[j].pitch), &(commands[j].roll));

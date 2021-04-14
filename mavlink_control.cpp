@@ -115,7 +115,15 @@ int main(int argc, char** argv) {
       );
       if(temp_active) { commands[line_index].active = true; } else { commands[line_index].active = false; }
 
-      printf("%d %d %f %f %f\n", commands[line_index].index, commands[line_index].active, commands[line_index].yaw, commands[line_index].pitch, commands[line_index].roll);
+      printf(
+        "%d %d %f %f %f\n",
+        commands[line_index].index, 
+        commands[line_index].active,
+        commands[line_index].yaw,
+        commands[line_index].pitch, 
+        commands[line_index].roll
+      );
+
       line_index++;
     }
 
@@ -151,7 +159,7 @@ int main(int argc, char** argv) {
     printf("\n\nHit Enter to start:\n\n");
     char key = getchar();
     uint64_t user_start_time_us = get_time_usec();
-    uint64_t user_relative_start_time_sec = (float) (gimbal.get_time_of_first_heartbeat_us() - user_start_time_us) / 1000000.0f;
+    uint64_t user_relative_start_time_sec = (float) (user_start_time_us - gimbal.get_time_of_first_heartbeat_us()) / 1000000.0f;
     printf(
       "User start time = %ld us. User start time relative to first heartbeat = %.3f s\n", 
       user_start_time_us, 

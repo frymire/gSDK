@@ -195,12 +195,12 @@ void Gimbal_Interface::read_messages() {
           last_message.time_stamps.mount_status = get_time_usec();
           mavlink_status_t* channel_status = mavlink_get_channel_status(MAVLINK_COMM_1);
 
-          printf(
-            "  MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
-            last_message.mount_status.pointing_c,
-            last_message.mount_status.pointing_a,
-            last_message.mount_status.pointing_b
-          );
+          //printf(
+          //  "  MAVLINK_MSG_ID_MOUNT_STATUS. YPR = [%d, %d, %d]\n",
+          //  last_message.mount_status.pointing_c,
+          //  last_message.mount_status.pointing_a,
+          //  last_message.mount_status.pointing_b
+          //);
           break;
         }
 

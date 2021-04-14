@@ -87,6 +87,66 @@ int main(int argc, char** argv) {
 
   try {
 
+    // Open a file containing the sensor pointing commands.
+    FILE* p_file = fopen("PointingCommands.csv", "r");
+    if(!p_file) {
+      printf("Error opening file.\n");
+      exit(1);
+    }
+
+    // Read sensor pointing commands.
+    const int k_num_timesteps = 36;
+    PointingCommand commands[k_num_timesteps];
+    int j = 0;
+    int temp_active;
+    while(!feof(p_file)) {
+      fscanf(p_file, "%d,%d,%f,%f,%f", &command[j].index, &temp_active, &command[j].yaw, &command[j].pitch, &command[j].roll);
+      if(temp_active) { command.active = true; } else { command.active = false; }
+      printf("command = %d %d %f %f %f\n", command[j].index, command[j].active, command[j].yaw, command[j].pitch, command[j].roll);
+      j++
+    }
+
+    fclose(p_file);
+
+    //PointingCommand commands[k_num_timesteps] ={
+    //  {0, 1, 135.0, 30.0, 0.0},
+    //  {1, 1, 125.0, 30.0, 0.0},
+    //  {2, 1, 115.0, 30.0, 0.0},
+    //  {3, 1, 105.0, 30.0, 0.0},
+    //  {4, 1, 95.0, 30.0, 0.0},
+    //  {5, 1, 85.0, 30.0, 0.0},
+    //  {6, 1, 75.0, 30.0, 0.0},
+    //  {7, 1, 65.0, 30.0, 0.0},
+    //  {8, 1, 55.0, 30.0, 0.0},
+    //  {9, 1, 45.0, 30.0, 0.0},
+    //  {10, 0, -90.0, -15.0, 0.0},
+    //  {11, 0, -90.0, -15.0, 0.0},
+    //  {12, 0, -90.0, -15.0, 0.0},
+    //  {13, 0, -90.0, -15.0, 0.0},
+    //  {14, 1, -90.0, -15.0, 0.0},
+    //  {15, 1, -90.0, -15.0, 0.0},
+    //  {16, 1, -90.0, -15.0, 0.0},
+    //  {17, 1, -90.0, -15.0, 0.0},
+    //  {18, 1, -90.0, -15.0, 0.0},
+    //  {19, 1, -90.0, -15.0, 0.0},
+    //  {20, 1, -90.0, -15.0, 0.0},
+    //  {21, 1, -80.0, -15.0, 0.0},
+    //  {22, 1, -70.0, -15.0, 0.0},
+    //  {23, 1, -60.0, -15.0, 0.0},
+    //  {24, 1, -50.0, -15.0, 0.0},
+    //  {25, 1, -40.0, -15.0, 0.0},
+    //  {26, 1, -30.0, -15.0, 0.0},
+    //  {27, 1, -20.0, -15.0, 0.0},
+    //  {28, 1, -10.0, -15.0, 0.0},
+    //  {29, 1, 0.0, 0.0, 0.0},
+    //  {30, 1, 0.0, 0.0, 0.0},
+    //  {31, 1, 0.0, 0.0, 0.0},
+    //  {32, 1, 0.0, 0.0, 0.0},
+    //  {33, 1, 0.0, 0.0, 0.0},
+    //  {34, 1, 0.0, 0.0, 0.0},
+    //  {35, 1, 0.0, 0.0, 0.0},
+    //};
+
     char* uart_name = (char*)"/dev/ttyUSB0"; // Unix default
     int baudrate = 115200;
     ParseCommandLine(argc, argv, uart_name, baudrate);
@@ -119,46 +179,6 @@ int main(int argc, char** argv) {
     uint64_t user_start_time_us = get_time_usec();
     //printf("User start time = %ld (us)\n", user_start_time_us);
 
-    const int k_num_timesteps = 36;
-    PointingCommand pointing[k_num_timesteps] = {
-      {0, 1, 135.0, 30.0, 0.0},
-      {1, 1, 125.0, 30.0, 0.0}, 
-      {2, 1, 115.0, 30.0, 0.0}, 
-      {3, 1, 105.0, 30.0, 0.0}, 
-      {4, 1, 95.0, 30.0, 0.0}, 
-      {5, 1, 85.0, 30.0, 0.0}, 
-      {6, 1, 75.0, 30.0, 0.0}, 
-      {7, 1, 65.0, 30.0, 0.0}, 
-      {8, 1, 55.0, 30.0, 0.0}, 
-      {9, 1, 45.0, 30.0, 0.0}, 
-      {10, 0, -90.0, -15.0, 0.0},
-      {11, 0, -90.0, -15.0, 0.0},
-      {12, 0, -90.0, -15.0, 0.0},
-      {13, 0, -90.0, -15.0, 0.0},
-      {14, 1, -90.0, -15.0, 0.0},
-      {15, 1, -90.0, -15.0, 0.0},
-      {16, 1, -90.0, -15.0, 0.0},
-      {17, 1, -90.0, -15.0, 0.0},
-      {18, 1, -90.0, -15.0, 0.0},
-      {19, 1, -90.0, -15.0, 0.0},
-      {20, 1, -90.0, -15.0, 0.0},
-      {21, 1, -80.0, -15.0, 0.0},
-      {22, 1, -70.0, -15.0, 0.0},
-      {23, 1, -60.0, -15.0, 0.0},
-      {24, 1, -50.0, -15.0, 0.0},
-      {25, 1, -40.0, -15.0, 0.0},
-      {26, 1, -30.0, -15.0, 0.0},
-      {27, 1, -20.0, -15.0, 0.0},
-      {28, 1, -10.0, -15.0, 0.0},
-      {29, 1, 0.0, 0.0, 0.0},
-      {30, 1, 0.0, 0.0, 0.0},
-      {31, 1, 0.0, 0.0, 0.0},
-      {32, 1, 0.0, 0.0, 0.0},
-      {33, 1, 0.0, 0.0, 0.0},
-      {34, 1, 0.0, 0.0, 0.0},
-      {35, 1, 0.0, 0.0, 0.0},
-    };
-
     uint64_t time_since_user_start_us;
     bool done = false;
     while(!done) {
@@ -167,8 +187,8 @@ int main(int argc, char** argv) {
       //printf("time_since_user_start_us = %ld, i = %ld\n", time_since_user_start_us, i);
       if(i >= k_num_timesteps) { done = true; break; }
       printf("Time = %.3f s: ", (float) time_since_user_start_us / 1000000.0f);
-      if(pointing[i].active) { 
-        PointAbsolute(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
+      if(commands[i].active) { 
+        PointAbsolute(gimbal, commands[i].yaw, commands[i].pitch, commands[i].roll); 
       } else {
         printf("Inactive\n");
       }
@@ -394,23 +414,15 @@ void PointIncremental(Gimbal_Interface &gimbal, float yaw, float pitch, float ro
 
 void PointAbsolute(Gimbal_Interface &gimbal, float yaw, float pitch, float roll) {
   printf("PointAbsolute YPR = [%f, %f, %f]...\n", yaw, pitch, roll);
-  //SetFollowMode(gimbal);
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
   gimbal.reset_acks();
   gimbal.set_gimbal_move(-1*mnt_orien.pitch + pitch, mnt_orien.roll + roll, mnt_orien.yaw + yaw);
   WaitForCommandAck(gimbal, 50000);
-  //SetLockMode(gimbal);
   printf("PointAbsolute complete.\n");
 }
 
 void PointHome(Gimbal_Interface &gimbal) {
   printf("PointHome....\n");
-  //SetFollowMode(gimbal);
-  //mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
-  //gimbal.reset_acks();
-  //gimbal.set_gimbal_move(-1*mnt_orien.pitch, mnt_orien.roll, mnt_orien.yaw);
-  //WaitForCommandAck(gimbal, 50000);
-  //SetLockMode(gimbal);
   PointAbsolute(gimbal, 0.0f, 0.0f, 0.0f);
   printf("PointHome complete.\n");
 }

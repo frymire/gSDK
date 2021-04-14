@@ -143,7 +143,8 @@ int main(int argc, char** argv) {
     bool done = false;
     while(!done) {
       uint64_t time_since_user_start_ms = get_time_msec() - user_start_time_ms;
-      if(time_since_user_start_ms / 1000 > k_num_timesteps) { done = true; break; }
+      int i = time_since_user_start_ms / 1000;
+      if(i >= k_num_timesteps) { done = true; break; }
       printf("Time = %.1f (s): ", (float) time_since_user_start_ms / 1000.0f);
       if(pointing[i].active) { 
         Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 

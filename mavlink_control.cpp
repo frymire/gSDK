@@ -48,8 +48,6 @@ using std::string;
 #include "serial_port.h"
 
 void ParseCommandLine(int argc, char** argv, char*& uart_name, int& baudrate);
-void DisplayGimbalStatus(Gimbal_Interface& gimbal_interface);
-
 void PrintFirmwareVersion(Gimbal_Interface &gimbal);
 void SetMessageRates(Gimbal_Interface &gimbal);
 void PrintMessageRates(config_mavlink_message_t message_rates);
@@ -70,6 +68,7 @@ void WriteRawIMU(mavlink_raw_imu_t imu);
 void WriteMountOrientation(mavlink_mount_orientation_t mnt_orien);
 void WriteEncoderAngles(mavlink_mount_status_t mnt_status);
 void WriteAxisSettings(gimbal_config_axis_t axis_settings);
+void DisplayGimbalStatus(Gimbal_Interface& gimbal_interface);
 
 Gimbal_Interface* gimbal_interface_quit;
 Serial_Port* serial_port_quit;
@@ -87,71 +86,40 @@ int main(int argc, char** argv) {
 
   try {
 
-    // Open a file containing the sensor pointing commands.
-    //FILE* p_file = fopen("/home/rstrauss/gSDK/PointingCommands.csv", "r");
+    printf("Reading sensor pointing commands from PointingCommands.csv...\n");
+
     FILE* p_file = fopen("PointingCommands.csv", "r");
     if(!p_file) {
       printf("Error opening file.\n");
       exit(1);
     }
 
-    // Read sensor pointing commands.
     const int k_num_timesteps = 36;
     PointingCommand commands[k_num_timesteps];
-    int j = 0;
+    int line_index = 0;
     int temp_active;
-
     char* line = NULL;
-    size_t len = 0;
+    size_t length = 0;
 
-    while(j < k_num_timesteps) {
-      ssize_t read = getline(&line, &len, p_file);
-      sscanf(line, "%d,%d,%f,%f,%f", &(commands[j].index), &temp_active, &(commands[j].yaw), &(commands[j].pitch), &(commands[j].roll));
-      if(temp_active) { commands[j].active = true; } else { commands[j].active = false; }
-      printf("%d %d %f %f %f\n", commands[j].index, commands[j].active, commands[j].yaw, commands[j].pitch, commands[j].roll);
-      j++;
+    while(line_index < k_num_timesteps) {
+
+      ssize_t read = getline(&line, &length, p_file);
+      sscanf(
+        line, 
+        "%d,%d,%f,%f,%f",
+        &commands[line_index].index,
+        &temp_active,
+        &commands[line_index].yaw,
+        &commands[line_index].pitch,
+        &commands[line_index].roll
+      );
+      if(temp_active) { commands[line_index].active = true; } else { commands[line_index].active = false; }
+
+      printf("%d %d %f %f %f\n", commands[line_index].index, commands[line_index].active, commands[line_index].yaw, commands[line_index].pitch, commands[line_index].roll);
+      line_index++;
     }
 
     fclose(p_file);
-
-    //PointingCommand commands[k_num_timesteps] ={
-    //  {0, 1, 135.0, 30.0, 0.0},
-    //  {1, 1, 125.0, 30.0, 0.0},
-    //  {2, 1, 115.0, 30.0, 0.0},
-    //  {3, 1, 105.0, 30.0, 0.0},
-    //  {4, 1, 95.0, 30.0, 0.0},
-    //  {5, 1, 85.0, 30.0, 0.0},
-    //  {6, 1, 75.0, 30.0, 0.0},
-    //  {7, 1, 65.0, 30.0, 0.0},
-    //  {8, 1, 55.0, 30.0, 0.0},
-    //  {9, 1, 45.0, 30.0, 0.0},
-    //  {10, 0, -90.0, -15.0, 0.0},
-    //  {11, 0, -90.0, -15.0, 0.0},
-    //  {12, 0, -90.0, -15.0, 0.0},
-    //  {13, 0, -90.0, -15.0, 0.0},
-    //  {14, 1, -90.0, -15.0, 0.0},
-    //  {15, 1, -90.0, -15.0, 0.0},
-    //  {16, 1, -90.0, -15.0, 0.0},
-    //  {17, 1, -90.0, -15.0, 0.0},
-    //  {18, 1, -90.0, -15.0, 0.0},
-    //  {19, 1, -90.0, -15.0, 0.0},
-    //  {20, 1, -90.0, -15.0, 0.0},
-    //  {21, 1, -80.0, -15.0, 0.0},
-    //  {22, 1, -70.0, -15.0, 0.0},
-    //  {23, 1, -60.0, -15.0, 0.0},
-    //  {24, 1, -50.0, -15.0, 0.0},
-    //  {25, 1, -40.0, -15.0, 0.0},
-    //  {26, 1, -30.0, -15.0, 0.0},
-    //  {27, 1, -20.0, -15.0, 0.0},
-    //  {28, 1, -10.0, -15.0, 0.0},
-    //  {29, 1, 0.0, 0.0, 0.0},
-    //  {30, 1, 0.0, 0.0, 0.0},
-    //  {31, 1, 0.0, 0.0, 0.0},
-    //  {32, 1, 0.0, 0.0, 0.0},
-    //  {33, 1, 0.0, 0.0, 0.0},
-    //  {34, 1, 0.0, 0.0, 0.0},
-    //  {35, 1, 0.0, 0.0, 0.0},
-    //};
 
     char* uart_name = (char*)"/dev/ttyUSB0"; // Unix default
     int baudrate = 115200;
@@ -183,8 +151,13 @@ int main(int argc, char** argv) {
     printf("\n\nHit Enter to start:\n\n");
     char key = getchar();
     uint64_t user_start_time_us = get_time_usec();
-    //printf("User start time = %ld (us)\n", user_start_time_us);
-
+    uint64_t user_relative_start_time_sec = (float) (gimbal.get_time_of_first_heartbeat_us() - user_start_time_us) / 1000000.0f;
+    printf(
+      "User start time = %ld us. User start time relative to first heartbeat = %.3f s\n", 
+      user_start_time_us, 
+      user_relative_start_time_sec
+    );
+    
     uint64_t time_since_user_start_us;
     bool done = false;
     while(!done) {
@@ -237,8 +210,7 @@ void ParseCommandLine(int argc, char** argv, char* &uart_name, int &baudrate) {
     if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--device") == 0) {
       if (argc > i + 1) {
         uart_name = argv[i + 1];
-      }
-      else {
+      } else {
         printf("%s\n", commandline_usage);
         throw EXIT_FAILURE;
       }
@@ -248,8 +220,7 @@ void ParseCommandLine(int argc, char** argv, char* &uart_name, int &baudrate) {
     if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--baud") == 0) {
       if (argc > i + 1) {
         baudrate = atoi(argv[i + 1]);
-      }
-      else {
+      } else {
         printf("%s\n", commandline_usage);
         throw EXIT_FAILURE;
       }
@@ -462,16 +433,6 @@ void SetGimbalSpeed(Gimbal_Interface &gimbal) {
 
   SetLockMode(gimbal); // go back to an actual pointing mode
 }
-
-//  case STATE_SET_GIMBAL_REBOOT:
-//  {
-//    printf("Rebooting gimbal.\n");
-//    onboard.set_gimbal_reboot();
-//    if ((get_time_usec() - sdk.last_time_send) > 1000000) {
-//      sdk.last_time_send = get_time_usec();
-//      sdk.state = STATE_IDLE;
-//    }
-//  }
 
 void DisplayGimbalStatus(Gimbal_Interface &gimbal) {
 

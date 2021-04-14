@@ -540,6 +540,8 @@ public:
    */
   config_mavlink_message_t get_gimbal_config_mavlink_msg(void);
 
+  uint64_t get_time_of_first_heartbeat_us(void) { return time_of_first_heartbeart_us; }
+
 private:
 
   Serial_Port* serial_port;

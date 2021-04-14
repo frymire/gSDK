@@ -63,6 +63,7 @@ void SetLockMode(Gimbal_Interface &gimbal);
 void SetFollowMode(Gimbal_Interface &gimbal);
 void SetGimbalSpeed(Gimbal_Interface &gimbal);
 void PointIncremental(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
+void PointAbsolute(Gimbal_Interface &gimbal, float yaw, float pitch, float roll);
 void PointHome(Gimbal_Interface &gimbal);
 void WriteGimbalStatus(gimbal_status_t gimbal_status);
 void WriteRawIMU(mavlink_raw_imu_t imu);

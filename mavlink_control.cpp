@@ -123,7 +123,10 @@ int main(int argc, char** argv) {
       {-45.0, -10.0, 0.0}
     };
 
-    for(int i = 0; i < k_num_timesteps; i++) { Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); }   
+    for(int i = 0; i < k_num_timesteps; i++) { 
+      printf("Pointing YPR = [%f, %f, %f]\n", pointing[i].yaw, pointing[i].pitch, pointing[i].roll);
+      Point(gimbal, pointing[i].yaw, pointing[i].pitch, pointing[i].roll); 
+    }   
     //Point(gimbal, 80.0f, 25.0f, 0.0f);
     //Point(gimbal, -45.0f, -10.0f, 0.0f);
 
@@ -333,7 +336,8 @@ void WaitForCommandAck(Gimbal_Interface &gimbal, uint polling_interval_us) {
   bool done = false;
   while(!done) {
     uint8_t ack_value = gimbal.get_command_ack_do_mount_control();
-    //printf("gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
+    printf("  gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
+    printf("  gimbal.get_command_ack_do_mount_control() = %d\n", ack_value);
     if(ack_value == 0) { done = true; }
     usleep(polling_interval_us);
   }

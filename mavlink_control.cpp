@@ -389,7 +389,7 @@ void PointAbsolute(Gimbal_Interface &gimbal, float yaw, float pitch, float roll)
   mavlink_mount_orientation_t mnt_orien = gimbal.get_gimbal_mount_orientation();
   gimbal.reset_acks();
   gimbal.set_gimbal_move(-1*mnt_orien.pitch + pitch, mnt_orien.roll + roll, mnt_orien.yaw + yaw);
-  WaitForCommandAck(gimbal, 50000);
+  /*WaitForCommandAck*/(gimbal, 50000);
   //SetLockMode(gimbal);
   printf("PointAbsolute complete.\n");
 }

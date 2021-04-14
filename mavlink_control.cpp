@@ -88,7 +88,8 @@ int main(int argc, char** argv) {
   try {
 
     // Open a file containing the sensor pointing commands.
-    FILE* p_file = fopen("/home/rstrauss/gSDK/PointingCommands.csv", "r");
+    //FILE* p_file = fopen("/home/rstrauss/gSDK/PointingCommands.csv", "r");
+    FILE* p_file = fopen("PointingCommands.csv", "r");
     if(!p_file) {
       printf("Error opening file.\n");
       exit(1);
@@ -104,19 +105,10 @@ int main(int argc, char** argv) {
     size_t len = 0;
 
     while(j < k_num_timesteps) {
-
       ssize_t read = getline(&line, &len, p_file);
-      printf("Retrieved line of length %zu:\n", read);
-      printf("%s", line);
-
-      //int n1, n2;
-      //float f1, f2, f3;
-      //sscanf(line, "%d,%d,%f,%f,%f", &n1, &n2, &f1, &f2, &f3);
-      //printf("%d %d %f %f %f", n1, n2, f1, f2, f3);
-
       sscanf(line, "%d,%d,%f,%f,%f", &(commands[j].index), &temp_active, &(commands[j].yaw), &(commands[j].pitch), &(commands[j].roll));
       if(temp_active) { commands[j].active = true; } else { commands[j].active = false; }
-      printf("command = %d %d %f %f %f\n", commands[j].index, commands[j].active, commands[j].yaw, commands[j].pitch, commands[j].roll);
+      printf("%d %d %f %f %f\n", commands[j].index, commands[j].active, commands[j].yaw, commands[j].pitch, commands[j].roll);
       j++;
     }
 

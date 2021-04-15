@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     int k_num_timesteps;
     ssize_t read = getline(&line, &length, p_file);
     printf("Line: %s\n", line);
-    sscanf(line, "%d", &k_num_timesteps);
+    sscanf(line, "%d*c", &k_num_timesteps);
     printf("k_num_timesteps = %d\n", k_num_timesteps);
     
     // Get the commands.
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 
       sscanf(
         line, 
-        "%d,%d,%f,%f,%f",
+        "%d,%d,%f,%f,%f*c",
         &commands[line_index].index,
         &temp_active,
         &commands[line_index].yaw,

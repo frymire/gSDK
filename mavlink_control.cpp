@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
 
       sscanf(
         line, 
-        "%d,%d,%f,%f,%f",
+        "%u,%d,%f,%f,%f",
         &commands[line_index].index,
         &temp_active,
         &commands[line_index].yaw,
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
       if(temp_active) { commands[line_index].active = true; } else { commands[line_index].active = false; }
 
       printf(
-        "%d %d %f %f %f\n",
+        "%u %d %f %f %f\n",
         commands[line_index].index, 
         commands[line_index].active,
         commands[line_index].yaw,

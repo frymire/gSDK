@@ -101,14 +101,14 @@ int main(int argc, char** argv) {
     // Read the first blank line into a dummy variable, because sscanf only seems to work after the first try.
     char dummy;
     read = getline(&line, &length, p_file);
-    printf("Line: %s", line);
+    //printf("Line: %s", line);
     sscanf(line, "%d", dummy);
-    printf("dummy = %c\n", dummy);
+    //printf("dummy = %c\n", dummy);
 
-    // Get the number of commands to read from the first line.
+    // Get the number of commands to read from the second line.
     int k_num_timesteps;
     read = getline(&line, &length, p_file);
-    printf("Line: %s", line);
+    //printf("Line: %s", line);
     sscanf(line, "%d", &k_num_timesteps);
     printf("Number of commands = %d\n", k_num_timesteps);
 
@@ -120,8 +120,7 @@ int main(int argc, char** argv) {
     while(line_index < k_num_timesteps) {
 
       read = getline(&line, &length, p_file);
-
-      printf("Line: %s\n", line);
+      //printf("Line: %s", line);
 
       sscanf(
         line, 

@@ -104,6 +104,9 @@ int main(int argc, char** argv) {
     while(line_index < k_num_timesteps) {
 
       ssize_t read = getline(&line, &length, p_file);
+
+      printf("Line: %s\n", line);
+
       sscanf(
         line, 
         "%d,%d,%f,%f,%f",

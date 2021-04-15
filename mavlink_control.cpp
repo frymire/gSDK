@@ -94,12 +94,20 @@ int main(int argc, char** argv) {
       exit(1);
     }
 
-    const int k_num_timesteps = 36;
+    char* line = NULL;
+    size_t length = 0;
+
+    // Get the number of commands to read from the first line.
+    int k_num_timesteps;
+    ssize_t read = getline(&line, &length, p_file);
+    printf("Line: %s\n", line);
+    sscanf(line, "%d", &k_num_timesteps);
+    printf("k_num_timesteps = %d\n", k_num_timesteps);
+    
+    // Get the commands.
     PointingCommand commands[k_num_timesteps];
     int line_index = 0;
     int temp_active;
-    char* line = NULL;
-    size_t length = 0;
 
     while(line_index < k_num_timesteps) {
 

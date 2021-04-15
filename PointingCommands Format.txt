@@ -1,0 +1,11 @@
+Line 1 is a single dummy character, necessary because of funny behavior in sscanf().
+
+Line 2 is the integer number of pointing commands.
+
+Each subsequent line is a comma-separated list of the following values (with no spaces):
+
+Column 1 - integer index of the command, starting from 0 (not 1)
+Column 2 - integer 1 indicates that the command at this time is active and should be executed, 0 means to ignore it
+Column 3 - float target yaw value, positive is to the left
+Column 4 - float target pitch value, positive is up
+Column 5 - float target roll value, currently ignored because the Pixy can't handle it.
